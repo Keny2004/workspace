@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG 卡片樣式檢測系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="css_test.css">
+
+    <style>
+        /* Console UI 樣式 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        
+        .console-text { font-family: 'Menlo', 'Monaco', 'Courier New', monospace; }
+        
+        /* 測試沙盒：這裡模擬題目要求的 HTML 結構，但我們把它縮小放旁邊，以免干擾 Console */
+        #test-sandbox {
+            border: 2px dashed #4b5563;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #111827;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            opacity: 1; /* 必須顯示，不然 getComputedStyle 抓不到數值 */
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 min-h-screen p-4 md:p-8 flex justify-center items-start">
+
+    <div class="w-full max-w-4xl space-y-6">
+
+        <div class="bg-slate-800 rounded-xl shadow-lg border border-slate-700 overflow-hidden">
+            <header class="bg-indigo-900/80 p-6 border-b border-indigo-700/50 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+                        🛡️ 樣式檢測器 (Style Inspector)
+                    </h1>
+                    <p class="text-indigo-200 text-sm mt-1 opacity-80">CSS Pseudo-elements & Classes 自動測評</p>
+                </div>
+                <div id="status-badge" class="px-4 py-2 rounded-lg font-bold bg-slate-700 text-slate-400 text-sm">
+                    等待分析...
+                </div>
+            </header>
+
+            <div class="p-4 bg-slate-900/50 text-center text-xs text-slate-500 uppercase tracking-widest border-b border-slate-700">
+                Live Preview (Test Sandbox)
+            </div>
+            
+            <div id="test-sandbox">
+                <div class="card">
+                    <h3>Warrior</h3>
+                    <ul><li>ATK: 100</li></ul>
+                </div>
+                <div class="card popular">
+                    <h3>Mage</h3>
+                    <ul><li>ATK: 120</li></ul>
+                </div>
+                <div class="card">
+                    <h3>Rogue</h3>
+                    <ul><li>ATK: 90</li></ul>
+                </div>
+            </div>
+
+            <div class="bg-black border-t border-slate-700 font-mono text-xs md:text-sm">
+                <div class="bg-slate-800 px-4 py-2 text-slate-400 flex items-center gap-2 border-b border-slate-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+                    <span>Inspector Log</span>
+                </div>
+                <div id="console-output" class="h-64 overflow-y-auto p-4 space-y-1 console-text text-slate-300">
+                    <div class="opacity-50">> Ready to inspect style.css...</div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-800 border-t border-slate-700 flex justify-end gap-3">
+                <button onclick="location.reload()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded transition text-sm font-bold">
+                    重新整理
+                </button>
+                <button onclick="runTests()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded shadow-lg transition transform hover:-translate-y-0.5 text-sm font-bold">
+                    執行檢測 (Inspect)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const consoleOutput = document.getElementById('console-output');
+        const statusBadge = document.getElementById('status-badge');
+        let hasError = false;
+
+        // 模擬 Console Log
+        function log(msg, type = 'info', detail = null) {
+            const div = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+            
+            let colorClass = "text-slate-300";
+            let icon = "";
+
+            if (type === 'error') {
+                colorClass = "text-red-400";
+                icon = "❌";
+                hasError = true;
+            } else if (type === 'success') {
+                colorClass = "text-green-400";
+                icon = "✅";
+            } else if (type === 'warn') {
+                colorClass = "text-yellow-400";
+                icon = "⚠️";
+            }
+
+            div.className = `${colorClass} border-l-2 ${type === 'error' ? 'border-red-500' : (type === 'success' ? 'border-green-500' : 'border-slate-600')} pl-2 mb-1`;
+            div.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="opacity-50 text-xs">[${timestamp}]</span> 
+                    <span>${icon} ${msg}</span>
+                </div>
+                ${detail ? `<div class="ml-12 text-xs opacity-70 mt-1 text-slate-400">${detail}</div>` : ''}
+            `;
+
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // 核心檢測邏輯
+        async function runTests() {
+            consoleOutput.innerHTML = '';
+            hasError = false;
+            statusBadge.className = "px-4 py-2 rounded-lg font-bold bg-blue-600 text-white animate-pulse";
+            statusBadge.textContent = "樣式分析中...";
+            
+            log("初始化 CSS 解析引擎...", 'info');
+            await wait(500);
+
+            // 取得測試元素
+            const cards = document.querySelectorAll('.card');
+            const popularCard = document.querySelector('.card.popular');
+
+            // 1. 檢查是否載入 CSS (背景色檢測)
+            log("檢查基礎樣式連結...", 'info');
+            const bg = window.getComputedStyle(cards[0]).backgroundColor;
+            // 預設背景通常是 rgba(0, 0, 0, 0)
+            if (bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') {
+                log("檢測失敗：卡片似乎沒有背景顏色", 'error', "請確認 style.css 是否存在，且 .card 有設定 background-color。");
+            } else {
+                log(`基礎樣式已載入 (Detected bg: ${bg})`, 'success');
+            }
+            await wait(300);
+
+            // 2. 檢查 ::before 偽元素 (重點)
+            log("分析偽元素 ::before (Rare Tag)...", 'info');
+            const beforeContent = window.getComputedStyle(popularCard, '::before').getPropertyValue('content');
+            const beforePos = window.getComputedStyle(popularCard, '::before').getPropertyValue('position');
+
+            // getComputedStyle 回傳 content 會包含引號，例如 '"RARE"'，如果是 none 則代表沒設定
+            if (beforeContent && beforeContent !== 'none' && beforeContent !== 'normal') {
+                log(`偽元素內容檢測通過: ${beforeContent}`, 'success');
+                
+                if (beforePos === 'absolute') {
+                    log("偽元素定位設定正確 (Absolute)", 'success');
+                } else {
+                    log("定位設定警告", 'warn', "建議將 ::before 設為 'position: absolute' 以便排版於右上角。");
+                }
+            } else {
+                log("找不到 ::before 偽元素", 'error', "請確認 .popular::before 是否設定了 content 屬性 (如 content: 'RARE')。");
+            }
+            await wait(300);
+
+            // 3. 檢查 :hover 過渡效果
+            log("分析互動體驗 (:hover transition)...", 'info');
+            const transition = window.getComputedStyle(cards[0]).transition;
+            
+            // 檢查是否有設定 transition (all 0s ease 0s 代表預設值/無)
+            if (transition && transition !== 'all 0s ease 0s' && transition !== '') {
+                log("偵測到動畫過渡效果 (Transition)", 'success');
+            } else {
+                log("未偵測到 Transition", 'warn', "雖然 :hover 功能可能正常，但建議加入 transition 屬性讓體驗更平滑。");
+            }
+            await wait(300);
+
+            // 4. 檢查 :nth-child 或特殊樣式
+            log("分析結構選取器 (:nth-child)...", 'info');
+            const border1 = window.getComputedStyle(cards[0]).border;
+            const border2 = window.getComputedStyle(cards[1]).border;
+
+            // 簡單比對第一張跟第二張卡片的樣式是否有差異
+            if (border1 !== border2) {
+                log("檢測到不同卡片有差異化樣式", 'success');
+            } else {
+                log("未檢測到樣式差異", 'info', "提示：可以使用 :nth-child(2) 為中間卡片添加特殊邊框。");
+            }
+
+            await wait(200);
+
+            // 最終判定
+            if (!hasError) {
+                statusBadge.className = "px-4 py-2 rounded-lg font-bold bg-green-500 text-white";
+                statusBadge.textContent = "🎉 驗證通過";
+                log("分析完成：樣式符合標準。", 'success');
+            } else {
+                statusBadge.className = "px-4 py-2 rounded-lg font-bold bg-red-500 text-white";
+                statusBadge.textContent = "⚠️ 驗證未通過";
+                log("分析完成：請修正上述錯誤後重試。", 'error');
+            }
+        }
+        
+        // 自動執行檢查 (如果檔案存在)
+        window.onload = () => {
+             // 簡單檢查一下是不是空的
+            const testEl = document.querySelector('.card');
+            if(window.getComputedStyle(testEl).width === 'auto') {
+                log("等待 style.css 載入...", 'info');
+            } else {
+                setTimeout(runTests, 500);
+            }
+        }
+    </script>
+</body>
+</html>

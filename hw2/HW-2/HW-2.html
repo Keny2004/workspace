@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>非同步抽卡機</title>
+    <style>
+        .bod {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+
+            background-image: url(https://img.freepik.com/free-vector/flat-design-poker-table-background_23-2151047011.jpg?semt=ais_hybrid&w=740&q=80);
+            background-size: cover;
+            background-position: center;
+        }
+        .cardbox {
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            padding: 40px;
+            width: 400px;
+            height: 200px;
+            border-radius: 10px;
+            box-shadow: 5px 5px 1px #a5a4a4;
+            
+        }
+        .cirrect1, .cirrect2 {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 50%;
+        }
+        .resultbox {
+            background-color: #dfe9ff;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 2px 2px 5px #b3b3b3;
+            
+        }
+        .result {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .drawbutton {
+            padding: 10px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: #efefef;
+            border-color: #007bffb9;
+
+        }
+    </style>
+</head>
+<body class="bod">
+    <div class="container">
+        <div class="cardbox">
+            <div class="cirrect1">
+                <div class="resultbox">
+                    <div class="result">點擊按鈕開始抽卡</div>
+                </div>
+            </div>
+            <div class="cirrect2">
+                <button class="drawbutton" onmousedown="point(this)">抽卡</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function point(element) {
+        const drawButton = document.querySelector('.drawbutton');
+        const resultDiv = document.querySelector('.result');
+        const resultBox = document.querySelector('.resultbox');
+        drawButton.disabled = true;
+        function drawCard() {
+            return new Promise((resolve, reject) => {setTimeout(() => {
+            if (Math.random() > 0.5) {
+            resolve("恭喜，抽到佳祐手工製作的稀有卡！");
+            } else {
+            reject("沒抽中ㄝ，再試一次吧！")}}, 2000); 
+            });
+        }
+        drawButton.disabled = true;
+        drawButton.style.cursor = 'not-allowed';
+        drawButton.style.backgroundColor = '#7a7a7a';
+        resultDiv.textContent = "抽卡中，請稍候...";
+        resultBox.style.backgroundColor = '#dfe9ff';
+        resultDiv.style.color = '#000000';
+
+        drawCard().then((result) => {
+            resultDiv.textContent = result;
+            resultBox.style.backgroundColor = '#fffd70';
+            resultDiv.style.color = '#572100';
+            drawButton.disabled = false;
+            drawButton.style.backgroundColor = '#007BFF';
+            drawButton.style.cursor = 'pointer';
+        }).catch((error) => {
+            resultDiv.textContent = error;
+            resultBox.style.backgroundColor = '#efefef';
+            resultDiv.style.color = '#000000';
+            drawButton.disabled = false;
+            drawButton.style.backgroundColor = '#007BFF';
+            drawButton.style.cursor = 'pointer';
+        });
+        }
+        
+    </script>
+</body>  
+</html>

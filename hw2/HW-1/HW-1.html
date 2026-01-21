@@ -1,0 +1,55 @@
+<!DOCTYPE html> 
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可移動的盒子</title>
+    <style>
+        .box {
+            width: 50px;
+            height: 50px;
+            background-color: rgb(45, 120, 191);
+            position: absolute;
+            cursor: grab;
+        }
+        .text {
+            color: white;
+            font-size: 20px;
+            text-align: center;
+            line-height: 50px;
+        }
+    </style>
+    
+</head>
+<body>
+    <div id="box" class="box"><div class="text">抓我</div></div>
+    
+    <script>
+        box = document.getElementById("box");
+        box.addEventListener("mousedown", press);
+        document.body.style.backgroundColor = "lightgrey";
+        
+        function press() {
+            document.addEventListener("mousemove", move);
+            document.addEventListener("mouseup", release);
+            offsetX = event.clientX - box.offsetLeft;
+            offsetY = event.clientY - box.offsetTop;
+
+            function move() {
+                console.log(event);
+                console.log("啊！");
+                
+                box.style.left = event.clientX - offsetX + "px";
+                box.style.top = event.clientY - offsetY + "px";
+            }
+
+            function release() {
+                console.log("別再碰我！！");
+                document.removeEventListener("mousemove", move);
+                document.removeEventListener("mouseup", release);
+            }
+        
+        }
+    </script>
+</body>
+</html>

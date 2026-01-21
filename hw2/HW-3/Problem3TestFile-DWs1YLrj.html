@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cars.js 自動測評系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; }
+        .pass-icon { color: #10B981; } /* Green */
+        .fail-icon { color: #EF4444; } /* Red */
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8 flex justify-center items-start">
+
+    <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden">
+        <header class="bg-gray-800 text-white p-6 text-center">
+            <h1 class="text-2xl font-bold">🏎️ Cars.js 作業自動測評</h1>
+            <p class="text-gray-400 text-sm mt-2">物件導向繼承與多型檢查</p>
+        </header>
+
+        <div id="statusBanner" class="p-4 text-center font-bold text-lg bg-gray-200 text-gray-600">
+            準備開始測試...
+        </div>
+
+        <div class="p-6 space-y-4">
+            <div id="testList" class="space-y-3">
+                </div>
+        </div>
+
+        <div class="bg-slate-900 text-slate-300 p-6 text-sm font-mono border-t border-gray-200">
+            <div class="mb-2 text-xs uppercase tracking-wider text-gray-500">System Logs</div>
+            <div id="consoleLogs" class="space-y-1 h-40 overflow-y-auto"></div>
+        </div>
+
+        <div class="p-4 bg-gray-50 border-t flex justify-end">
+            <button onclick="runTests()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow transition">
+                重新測試
+            </button>
+        </div>
+    </div>
+
+    <script src="cars.js"></script>
+
+    <script>
+        const logArea = document.getElementById('consoleLogs');
+        const listArea = document.getElementById('testList');
+        const statusBanner = document.getElementById('statusBanner');
+        let allPassed = true;
+
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.textContent = `> ${msg}`;
+            if(type === 'error') div.className = 'text-red-400';
+            else if(type === 'success') div.className = 'text-green-400';
+            logArea.appendChild(div);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function createTestItem(title, id) {
+            const div = document.createElement('div');
+            div.className = "flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200";
+            div.innerHTML = `
+                <span class="font-medium text-gray-700">${title}</span>
+                <span id="${id}" class="font-bold text-gray-400">WAITING</span>
+            `;
+            listArea.appendChild(div);
+            return document.getElementById(id);
+        }
+
+        function updateTestStatus(element, passed, msg) {
+            if (passed) {
+                element.textContent = "PASS";
+                element.className = "font-bold text-green-600";
+                log(`[PASS] ${msg}`, 'success');
+            } else {
+                element.textContent = "FAIL";
+                element.className = "font-bold text-red-500";
+                log(`[FAIL] ${msg}`, 'error');
+                allPassed = false;
+            }
+        }
+
+        async function runTests() {
+            // Reset UI
+            listArea.innerHTML = '';
+            logArea.innerHTML = '';
+            allPassed = true;
+            statusBanner.className = "p-4 text-center font-bold text-lg bg-blue-100 text-blue-700 animate-pulse";
+            statusBanner.textContent = "測試執行中...";
+            
+            log("開始載入測試模組...");
+
+            // 定義測試案例
+            const tests = [
+                {
+                    name: "檢查基礎 Car 類別",
+                    check: () => {
+                        if (typeof Car !== 'function') throw new Error("找不到 Car 類別 (未定義或命名錯誤)");
+                        const c = new Car("TestBrand");
+                        if (!c.brand) throw new Error("Car 實例沒有 brand 屬性");
+                        return "Car 類別存在且屬性正確";
+                    }
+                },
+                {
+                    name: "檢查 SportsCar (繼承與屬性)",
+                    check: () => {
+                        if (typeof SportsCar !== 'function') throw new Error("找不到 SportsCar 類別");
+                        const s = new SportsCar("Ferrari");
+                        if (!(s instanceof Car)) throw new Error("SportsCar 沒有繼承自 Car");
+                        if (s.topSpeed === undefined) throw new Error("找不到 topSpeed 屬性");
+                        if (s.topSpeed <= 250) throw new Error(`topSpeed (${s.topSpeed}) 應該要 > 250`);
+                        return "SportsCar 繼承正確且速度達標";
+                    }
+                },
+                {
+                    name: "檢查 FamilyVan (繼承與屬性)",
+                    check: () => {
+                        if (typeof FamilyVan !== 'function') throw new Error("找不到 FamilyVan 類別");
+                        const f = new FamilyVan("Toyota");
+                        if (!(f instanceof Car)) throw new Error("FamilyVan 沒有繼承自 Car");
+                        if (f.seatCount === undefined) throw new Error("找不到 seatCount 屬性");
+                        if (f.seatCount < 7) throw new Error(`seatCount (${f.seatCount}) 應該要 >= 7`);
+                        return "FamilyVan 繼承正確且座位足夠";
+                    }
+                },
+                {
+                    name: "檢查 HeavyTruck (繼承與屬性)",
+                    check: () => {
+                        if (typeof HeavyTruck !== 'function') throw new Error("找不到 HeavyTruck 類別");
+                        const t = new HeavyTruck("Volvo");
+                        if (!(t instanceof Car)) throw new Error("HeavyTruck 沒有繼承自 Car");
+                        if (t.cargoCapacity === undefined) throw new Error("找不到 cargoCapacity 屬性");
+                        if (t.cargoCapacity <= 1000) throw new Error(`cargoCapacity (${t.cargoCapacity}) 應該要 > 1000`);
+                        return "HeavyTruck 繼承正確且載重達標";
+                    }
+                }
+            ];
+
+            // 執行測試
+            for (let i = 0; i < tests.length; i++) {
+                const test = tests[i];
+                const el = createTestItem(test.name, `test-${i}`);
+                
+                // 稍微延遲讓 UI 有跑動的感覺
+                await new Promise(r => setTimeout(r, 500));
+
+                try {
+                    const msg = test.check();
+                    updateTestStatus(el, true, msg);
+                } catch (e) {
+                    updateTestStatus(el, false, e.message);
+                }
+            }
+
+            // 最終結果
+            if (allPassed) {
+                statusBanner.className = "p-4 text-center font-bold text-lg bg-green-500 text-white";
+                statusBanner.textContent = "🎉 恭喜！全數通過測試";
+                log("測試結束：合格", 'success');
+            } else {
+                statusBanner.className = "p-4 text-center font-bold text-lg bg-red-500 text-white";
+                statusBanner.textContent = "⚠️ 測試失敗，請檢查下方錯誤訊息";
+                log("測試結束：不合格", 'error');
+            }
+        }
+
+        // 自動執行
+        window.onload = () => {
+            // 檢查是否成功載入 js 檔案
+            setTimeout(() => {
+                if (typeof Car === 'undefined') {
+                    log("錯誤：無法讀取 cars.js，請確認檔案是否存在於同一目錄", "error");
+                    createTestItem("檔案讀取檢查", "file-check");
+                    updateTestStatus(document.getElementById("file-check"), false, "找不到 cars.js");
+                    statusBanner.className = "p-4 text-center font-bold text-lg bg-red-500 text-white";
+                    statusBanner.textContent = "❌ 檔案讀取失敗";
+                } else {
+                    runTests();
+                }
+            }, 100);
+        };
+    </script>
+</body>
+</html>

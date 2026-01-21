@@ -1,0 +1,41 @@
+<!DOCTYPE html> 
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>會逃的盒子</title>
+    <style>
+        .box {
+            width: 100px;
+            height: 100px;
+            background-color: rgb(45, 120, 191);
+            position: absolute;
+        }
+        .text {
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            line-height: 100px;
+        }
+    </style>
+    
+</head>
+<body>
+    <div id="box" class="box" onmouseover="run(this)" onmouseout="leave()"><div class="text">別抓我</div></div>
+
+    <script>
+        function run(element) {
+                let maxX = window.innerWidth - element.offsetWidth;
+                let maxY = window.innerHeight - element.offsetHeight;
+                let randomX = Math.floor(Math.random() * maxX);
+                let randomY = Math.floor(Math.random() * maxY);
+                element.style.left = randomX + "px";
+                element.style.top = randomY + "px";
+        }
+        
+        function leave() {
+            console.log("別再碰我！！");
+        }
+    </script>
+</body>
+</html>

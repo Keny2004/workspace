@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幽靈列車 - 自動測評系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定義捲軸樣式 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        
+        .console-text { font-family: 'Menlo', 'Monaco', 'Courier New', monospace; }
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 min-h-screen p-4 md:p-8 flex justify-center items-start">
+
+    <div class="w-full max-w-3xl space-y-4">
+        
+        <div class="bg-gray-800 rounded-xl shadow-lg border border-gray-700 overflow-hidden">
+            <header class="bg-purple-900/80 p-6 border-b border-purple-700/50 flex justify-between items-center backdrop-blur-sm">
+                <div>
+                    <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+                        👻 幽靈列車 (Ghost Train)
+                    </h1>
+                    <p class="text-purple-200 text-sm mt-1 opacity-80">Linked List 資料結構自動測評</p>
+                </div>
+                <div id="status-badge" class="px-4 py-2 rounded-lg font-bold bg-gray-700 text-gray-400 text-sm">
+                    等待測試...
+                </div>
+            </header>
+
+            <div id="test-list" class="p-6 space-y-3 min-h-[100px]">
+                </div>
+
+            <div class="p-4 bg-gray-900/50 border-t border-gray-700 flex justify-end gap-3">
+                <button onclick="location.reload()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition text-sm font-bold">
+                    重新整理
+                </button>
+                <button onclick="runTests()" class="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded shadow-lg shadow-purple-900/20 transition transform hover:-translate-y-0.5 text-sm font-bold">
+                    執行測試 (Run Test)
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-black rounded-xl shadow-lg border border-gray-700 overflow-hidden font-mono text-xs md:text-sm">
+            <div class="bg-gray-800 px-4 py-2 text-gray-400 flex items-center gap-2 border-b border-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+                <span>Debug Console</span>
+            </div>
+            <div id="console-output" class="h-64 overflow-y-auto p-4 space-y-1 console-text text-gray-300">
+                <div class="opacity-50">> System ready. Waiting for linked_list.js...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="linked_list.js"></script>
+
+    <script>
+        // --- 工具函式 ---
+        const testList = document.getElementById('test-list');
+        const consoleOutput = document.getElementById('console-output');
+        const statusBadge = document.getElementById('status-badge');
+        let hasError = false;
+
+        // 模擬 Console.log
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+            
+            if (type === 'error') {
+                div.className = "text-red-400 border-l-2 border-red-500 pl-2";
+                div.innerHTML = `<span class="opacity-50">[${timestamp}]</span> ❌ ${msg}`;
+            } else if (type === 'success') {
+                div.className = "text-green-400";
+                div.innerHTML = `<span class="opacity-50">[${timestamp}]</span> ✅ ${msg}`;
+            } else if (type === 'warn') {
+                div.className = "text-yellow-400";
+                div.innerHTML = `<span class="opacity-50">[${timestamp}]</span> ⚠️ ${msg}`;
+            } else {
+                div.className = "text-gray-300";
+                div.innerHTML = `<span class="opacity-50">[${timestamp}]</span> ${msg}`;
+            }
+
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        // 新增測試項目 UI
+        function addTestResult(title, passed, detail = "") {
+            const div = document.createElement('div');
+            div.className = `flex justify-between items-center p-3 rounded border transition-all ${
+                passed 
+                ? "bg-green-900/20 border-green-800 hover:bg-green-900/30" 
+                : "bg-red-900/20 border-red-800 hover:bg-red-900/30"
+            }`;
+            
+            div.innerHTML = `
+                <div class="flex flex-col">
+                    <span class="font-bold ${passed ? 'text-green-400' : 'text-red-400'}">
+                        ${passed ? '✔ PASS' : '✘ FAIL'} : ${title}
+                    </span>
+                    ${!passed ? `<span class="text-xs text-red-300 mt-1">${detail}</span>` : ''}
+                </div>
+            `;
+            testList.appendChild(div);
+            
+            if (!passed) hasError = true;
+        }
+
+        // 等待函數 (讓 UI 有時間渲染)
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // --- 主測試邏輯 ---
+        async function runTests() {
+            // 重置 UI
+            testList.innerHTML = '';
+            consoleOutput.innerHTML = '';
+            hasError = false;
+            statusBadge.className = "px-4 py-2 rounded-lg font-bold bg-blue-600 text-white animate-pulse";
+            statusBadge.textContent = "測試執行中...";
+            
+            log("開始執行測試程序...", 'info');
+            await wait(300);
+
+            try {
+                // 1. 檢查檔案與類別定義
+                log("檢查類別定義 (Class Definitions)...");
+                if (typeof Node === 'undefined') throw new Error("找不到 'Node' 類別，請確認檔案名稱是否為 linked_list.js");
+                if (typeof LinkedList === 'undefined') throw new Error("找不到 'LinkedList' 類別");
+                
+                // 檢查 Node 建構子
+                const tempNode = new Node("Test");
+                if (tempNode.value !== "Test" || tempNode.next !== null) {
+                    addTestResult("Node 類別結構", false, "Node 必須包含 value 與 next 屬性");
+                    log("Node 初始化失敗：屬性不正確", 'error');
+                } else {
+                    addTestResult("Node 類別結構", true);
+                    log("Node 類別結構正確", 'success');
+                }
+                await wait(200);
+
+                // 2. 測試 append (空陣列)
+                log("測試 append() - 初始狀態...");
+                const train = new LinkedList();
+                if (train.head !== null) {
+                    addTestResult("LinkedList 初始化", false, "剛建立時 head 應為 null");
+                    throw new Error("LinkedList 初始化錯誤");
+                }
+                
+                train.append("Engine");
+                if (train.head && train.head.value === "Engine" && train.head.next === null) {
+                    addTestResult("Append: 加入第一節車廂 (Head)", true);
+                    log("成功加入 Head: Engine", 'success');
+                } else {
+                    addTestResult("Append: 加入第一節車廂 (Head)", false, "Head 未正確指向新節點");
+                    log("Head 設定失敗", 'error');
+                    console.log("Debug: current head is", train.head);
+                }
+                await wait(200);
+
+                // 3. 測試 append (多節)
+                log("測試 append() - 串接功能...");
+                train.append("Carriage A");
+                train.append("Carriage B");
+                
+                let debugString = "Current List: ";
+                let curr = train.head;
+                while(curr) { debugString += `[${curr.value}] -> `; curr = curr.next; }
+                log(debugString + "null");
+
+                if (train.head.next && train.head.next.value === "Carriage A") {
+                    if (train.head.next.next && train.head.next.next.value === "Carriage B") {
+                        addTestResult("Append: 連續加入多節車廂", true);
+                        log("節點串接正確 (Engine -> A -> B)", 'success');
+                    } else {
+                        addTestResult("Append: 連續加入多節車廂", false, "第三個節點 (Carriage B) 連接失敗");
+                        log("第三個節點遺失", 'error');
+                    }
+                } else {
+                    addTestResult("Append: 連續加入多節車廂", false, "第二個節點 (Carriage A) 連接失敗");
+                    log("第二個節點遺失", 'error');
+                }
+                await wait(200);
+
+                // 4. 測試 toString
+                log("測試 toString()...");
+                if (typeof train.toString !== 'function') {
+                    addTestResult("toString 方法", false, "未定義 toString 方法");
+                } else {
+                    const str = train.toString();
+                    log(`輸出結果: "${str}"`);
+                    if (str.includes("Engine") && str.includes("Carriage B")) {
+                        addTestResult("toString 輸出格式", true);
+                        log("字串輸出包含正確內容", 'success');
+                    } else {
+                        addTestResult("toString 輸出格式", false, "輸出字串缺少關鍵內容");
+                        log("字串檢查失敗", 'error');
+                    }
+                }
+                await wait(200);
+
+                // 5. 測試 removeLast (加分題)
+                log("測試 removeLast (加分題)...");
+                if (typeof train.removeLast !== 'function') {
+                    log("未實作 removeLast，跳過測試", 'warn');
+                    addTestResult("RemoveLast (加分題)", true, "未實作 (視為 Pass)");
+                } else {
+                    train.removeLast(); // 應該移除 B
+                    
+                    // 檢查 B 是否消失
+                    let isB_Gone = true;
+                    let temp = train.head;
+                    while(temp) {
+                        if (temp.value === "Carriage B") isB_Gone = false;
+                        temp = temp.next;
+                    }
+
+                    if (isB_Gone && train.head.next.next === null) {
+                        addTestResult("RemoveLast 功能", true);
+                        log("成功移除最後一節車廂", 'success');
+                    } else {
+                        addTestResult("RemoveLast 功能", false, "移除後結構不正確或節點仍在");
+                        log("移除失敗", 'error');
+                    }
+                }
+
+            } catch (err) {
+                log(`執行時發生錯誤: ${err.message}`, 'error');
+                addTestResult("系統執行錯誤", false, err.message);
+            }
+
+            // 最終結果判定
+            if (!hasError) {
+                statusBadge.className = "px-4 py-2 rounded-lg font-bold bg-green-500 text-white";
+                statusBadge.textContent = "🎉 通過所有測試";
+                log("測試結束：結果完美！", 'success');
+                // 彩蛋
+                log("👻 幽靈列車準備發車...", 'info');
+            } else {
+                statusBadge.className = "px-4 py-2 rounded-lg font-bold bg-red-500 text-white";
+                statusBadge.textContent = "⚠️ 測試未通過";
+                log("測試結束：請修正錯誤後重試。", 'error');
+            }
+        }
+
+        // 頁面載入後自動嘗試執行一次 (如果檔案存在)
+        window.onload = () => {
+            log("System initialized.");
+            // 延遲一點點執行，確保 user 看到動畫
+            setTimeout(() => {
+                if (typeof LinkedList !== 'undefined') {
+                    runTests();
+                } else {
+                    log("警告：找不到 linked_list.js，請確保檔案在同一目錄下。", 'warn');
+                    addTestResult("檔案讀取", false, "找不到 linked_list.js");
+                    statusBadge.className = "px-4 py-2 rounded-lg font-bold bg-red-500 text-white";
+                    statusBadge.textContent = "檔案遺失";
+                }
+            }, 500);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公會數據分析 - 自動測評系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .console-text { font-family: 'Menlo', 'Monaco', 'Courier New', monospace; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 min-h-screen p-4 md:p-8 flex justify-center items-start">
+
+    <div class="w-full max-w-4xl space-y-4">
+        
+        <div class="bg-gray-800 rounded-xl shadow-lg border border-gray-700 overflow-hidden">
+            <header class="bg-cyan-900/80 p-6 border-b border-cyan-700/50 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+                        📊 公會數據分析儀 (Guild Analyst)
+                    </h1>
+                    <p class="text-cyan-200 text-sm mt-1 opacity-80">Array Methods 自動測評</p>
+                </div>
+                <div id="status-badge" class="px-4 py-2 rounded-lg font-bold bg-gray-700 text-gray-400 text-sm">
+                    等待資料輸入...
+                </div>
+            </header>
+
+            <div id="test-list" class="p-6 space-y-3"></div>
+
+            <div class="p-4 bg-gray-900/50 border-t border-gray-700 flex justify-end gap-3">
+                <button onclick="location.reload()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold text-sm">重新整理</button>
+                <button onclick="runTests()" class="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded shadow-lg font-bold text-sm">開始分析</button>
+            </div>
+        </div>
+
+        <div class="bg-black rounded-xl shadow-lg border border-gray-700 overflow-hidden font-mono text-xs md:text-sm">
+            <div class="bg-gray-800 px-4 py-2 text-gray-400 flex items-center gap-2 border-b border-gray-700">
+                <span>System Log</span>
+            </div>
+            <div id="console-output" class="h-64 overflow-y-auto p-4 space-y-1 console-text text-gray-300">
+                <div class="opacity-50">> System ready.</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="analysis.js"></script>
+
+    <script>
+        // --- 測試資料 ---
+        const MOCK_DATA = [
+            { id: 101, name: "Aragorn", role: "Warrior", level: 50, isReady: true, money: 500 },
+            { id: 102, name: "Legolas", role: "Archer", level: 120, isReady: true, money: 1200 },
+            { id: 103, name: "Gimli", role: "Warrior", level: 45, isReady: true, money: 300 },
+            { id: 104, name: "Gandalf", role: "Mage", level: 999, isReady: false, money: 5000 },
+            { id: 105, name: "Frodo", role: "Civilian", level: 5, isReady: true, money: 50 }
+        ];
+
+        const consoleOutput = document.getElementById('console-output');
+        const testList = document.getElementById('test-list');
+        const statusBadge = document.getElementById('status-badge');
+        let hasError = false;
+
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            const time = new Date().toLocaleTimeString('en-US', {hour12:false});
+            div.className = type === 'error' ? "text-red-400" : type === 'success' ? "text-green-400" : "text-gray-300";
+            div.innerHTML = `<span class="opacity-50">[${time}]</span> ${msg}`;
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function addResult(title, passed, msg = "") {
+            const div = document.createElement('div');
+            div.className = `flex justify-between items-center p-3 rounded border ${passed ? "bg-green-900/20 border-green-800" : "bg-red-900/20 border-red-800"}`;
+            div.innerHTML = `
+                <div>
+                    <span class="font-bold ${passed ? 'text-green-400' : 'text-red-400'}">${passed ? '✔ PASS' : '✘ FAIL'}</span>
+                    <span class="text-gray-200 ml-2">${title}</span>
+                </div>
+                ${!passed ? `<span class="text-xs text-red-300">${msg}</span>` : ''}
+            `;
+            testList.appendChild(div);
+            if (!passed) hasError = true;
+        }
+
+        async function runTests() {
+            testList.innerHTML = '';
+            consoleOutput.innerHTML = '';
+            hasError = false;
+            statusBadge.className = "px-4 py-2 rounded-lg font-bold bg-blue-600 text-white animate-pulse";
+            statusBadge.innerText = "分析中...";
+
+            log("載入冒險者資料...", 'info');
+            log(`資料總數: ${MOCK_DATA.length} 筆`);
+
+            setTimeout(() => {
+                try {
+                    // 1. Filter Check
+                    if (typeof getWarriors !== 'function') throw new Error("找不到 getWarriors 函式");
+                    const warriors = getWarriors(MOCK_DATA);
+                    if (Array.isArray(warriors) && warriors.length === 2 && warriors.every(m => m.role === 'Warrior')) {
+                        addResult("1. filter() - 篩選戰士", true);
+                        log("成功篩選出所有戰士", 'success');
+                    } else {
+                        addResult("1. filter() - 篩選戰士", false, "數量或職業不正確");
+                        log("Filter 測試失敗", 'error');
+                    }
+
+                    // 2. Map Check
+                    if (typeof getNameTags !== 'function') throw new Error("找不到 getNameTags 函式");
+                    const tags = getNameTags(MOCK_DATA);
+                    if (tags.length === 5 && tags[0] === "[Warrior] Aragorn" && typeof tags[0] === 'string') {
+                        addResult("2. map() - 產生名牌", true);
+                        log("名牌格式正確", 'success');
+                    } else {
+                        addResult("2. map() - 產生名牌", false, "格式應為 '[Role] Name'");
+                        log("Map 測試失敗", 'error');
+                    }
+
+                    // 3. Find Check
+                    if (typeof findGandalf !== 'function') throw new Error("找不到 findGandalf 函式");
+                    const gandalf = findGandalf(MOCK_DATA);
+                    if (gandalf && gandalf.name === 'Gandalf') {// 這裡 name 已經被 map 改變，所以幫忙改了一下，其他都沒動
+                        addResult("3. find() - 尋找特定人物", true);
+                        log("成功找到甘道夫", 'success');
+                    } else {
+                        addResult("3. find() - 尋找特定人物", false, "回傳值錯誤或未找到");
+                    }
+
+                    // 4. Reduce Check
+                    if (typeof calculateTotalMoney !== 'function') throw new Error("找不到 calculateTotalMoney 函式");
+                    const total = calculateTotalMoney(MOCK_DATA);
+                    const expectedTotal = 500 + 1200 + 300 + 5000 + 50;
+                    if (total === expectedTotal) {
+                        addResult("4. reduce() - 計算總資產", true);
+                        log(`總金額計算正確: ${total}`, 'success');
+                    } else {
+                        addResult("4. reduce() - 計算總資產", false, `預期 ${expectedTotal}, 得到 ${total}`);
+                    }
+
+                    // 5. Some/Every Check
+                    if (typeof checkStatus !== 'function') throw new Error("找不到 checkStatus 函式");
+                    const status = checkStatus(MOCK_DATA);
+                    if (status.isEveryoneReady === false && status.hasSuperStrong === true) {
+                        addResult("5. every() & some() - 狀態檢查", true);
+                        log("隊伍狀態判斷正確", 'success');
+                    } else {
+                        addResult("5. every() & some() - 狀態檢查", false, "判斷邏輯有誤");
+                    }
+
+                     // 6. forEach Check
+                     if (typeof tallyRoles !== 'function') throw new Error("找不到 tallyRoles 函式");
+                    const roleCounts = tallyRoles(MOCK_DATA);
+                    if (roleCounts['Warrior'] === 2 && roleCounts['Mage'] === 1) {
+                        addResult("6. forEach() - 職業統計", true);
+                        log("職業統計正確", 'success');
+                    } else {
+                        addResult("6. forEach() - 職業統計", false, "數量計算有誤");
+                    }
+
+                } catch (e) {
+                    log(`執行錯誤: ${e.message}`, 'error');
+                    addResult("程式執行錯誤", false, e.message);
+                }
+
+                if (!hasError) {
+                    statusBadge.className = "px-4 py-2 rounded-lg font-bold bg-green-500 text-white";
+                    statusBadge.innerText = "🎉 完美分析";
+                } else {
+                    statusBadge.className = "px-4 py-2 rounded-lg font-bold bg-red-500 text-white";
+                    statusBadge.innerText = "⚠️ 分析有誤";
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>
