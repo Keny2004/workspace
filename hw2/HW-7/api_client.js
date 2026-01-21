@@ -20,6 +20,7 @@ async function sendMessage(name, message) {
     });
     console.log(response);
     const result = await response.json();
-    console.log(result);
+    console.log(result);//hiii
     return result;
+    
 }
