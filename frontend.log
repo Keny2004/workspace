@@ -1,0 +1,11 @@
+
+> frontend@0.0.0 dev
+> vite
+
+
+  VITE v5.4.21  ready in 118 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: use --host to expose
+下午3:30:49 [vite] hmr update /src/pages/SystemStatus.jsx, /src/index.css
+下午3:31:06 [vite] hmr update /src/pages/Dashboard.jsx, /src/index.css
