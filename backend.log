@@ -1,30 +1,41 @@
 /Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
   warnings.warn(
-INFO:     Started server process [63100]
+INFO:     Started server process [88998]
 INFO:     Waiting for application startup.
-2026-03-22 18:31:58,014 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2026-03-22 18:31:58,015 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2026-03-22 18:31:58,015 - apscheduler.scheduler - INFO - Added job "SchedulerService.update_market_prices" to job store "default"
-2026-03-22 18:31:58,015 - apscheduler.scheduler - INFO - Added job "SchedulerService.crawl_products" to job store "default"
-2026-03-22 18:31:58,015 - apscheduler.scheduler - INFO - Scheduler started
+2026-03-23 00:59:14,122 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-23 00:59:14,123 - Scheduler - INFO - Reloading Intervals: Crawl=45m, AI=1h, Summary=10m, Enrich=30m
+2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Added job "SchedulerService.update_market_prices" to job store "default"
+2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Added job "SchedulerService.crawl_products" to job store "default"
+2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Added job "SchedulerService.run_ai_predictions" to job store "default"
+2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Added job "SchedulerService.sweep_missing_summaries" to job store "default"
+2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Added job "SchedulerService.sweep_metadata_enrichment" to job store "default"
+2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Scheduler started
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     127.0.0.1:52276 - "WebSocket /ws/logs" [accepted]
-INFO:     connection closed
-Log WebSocket error: 
+2026-03-23 01:09:14,129 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_missing_summaries (trigger: interval[0:10:00], next run at: 2026-03-23 01:09:14 CST)" (scheduled at 2026-03-23 01:09:14.124377+08:00)
+2026-03-23 01:09:14,133 - Scheduler - INFO - Starting AI Summary Sweep...
+2026-03-23 01:09:14,150 - Scheduler - INFO - Processed 0 missing AI summaries.
+2026-03-23 01:09:14,151 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_missing_summaries (trigger: interval[0:10:00], next run at: 2026-03-23 01:19:14 CST)" executed successfully
+INFO:     127.0.0.1:64268 - "GET /api/market-predictions HTTP/1.1" 500 Internal Server Error
 ERROR:    Exception in ASGI application
 Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
-    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
     return await self.app(scope, receive, send)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
     await super().__call__(scope, receive, send)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
     await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
     await self.app(scope, receive, send)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
@@ -38,193 +49,48 @@ Traceback (most recent call last):
     await self.middleware_stack(scope, receive, send)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
     await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 290, in handle
     await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
-    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 121, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
     raise exc
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
     await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
-    await func(session)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
-    await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
-    await websocket.close()
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
-    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
-    raise RuntimeError('Cannot call "send" once a close message has been sent.')
-RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     127.0.0.1:52278 - "WebSocket /ws/logs" [accepted]
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 107, in app
+    response = await f(request)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 228, in get_market_predictions
+    "user_manual_price": p.specification.user_manual_price,
+AttributeError: 'Specification' object has no attribute 'user_manual_price'
+INFO:     127.0.0.1:64283 - "GET /api/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64282 - "GET /api/market-prices/all HTTP/1.1" 200 OK
+2026-03-23 01:19:14,127 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_missing_summaries (trigger: interval[0:10:00], next run at: 2026-03-23 01:29:14 CST)" (scheduled at 2026-03-23 01:19:14.124377+08:00)
+2026-03-23 01:19:14,129 - Scheduler - INFO - Starting AI Summary Sweep...
+2026-03-23 01:19:14,134 - Scheduler - INFO - Processed 0 missing AI summaries.
+2026-03-23 01:19:14,135 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_missing_summaries (trigger: interval[0:10:00], next run at: 2026-03-23 01:29:14 CST)" executed successfully
+INFO:     127.0.0.1:64441 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64442 - "GET /api/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64446 - "WebSocket /ws/logs" [accepted]
 INFO:     connection open
-INFO:     127.0.0.1:52280 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-INFO:     connection closed
-INFO:     connection closed
-INFO:     127.0.0.1:52306 - "WebSocket /ws/logs" [accepted]
-INFO:     connection closed
-Log WebSocket error: 
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
-    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
-    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
-    await func(session)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
-    await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
-    await websocket.close()
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
-    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
-    raise RuntimeError('Cannot call "send" once a close message has been sent.')
-RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     127.0.0.1:52308 - "WebSocket /ws/logs" [accepted]
-INFO:     connection open
-INFO:     127.0.0.1:52310 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-Log WebSocket error: 
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
-    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
-    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
-    await func(session)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
-    await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
-    await websocket.close()
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
-    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
-    raise RuntimeError('Cannot call "send" once a close message has been sent.')
-RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     127.0.0.1:52311 - "POST /api/crawl/resume HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52312 - "POST /api/crawl HTTP/1.1" 200 OK
-2026-03-22 18:32:20,750 - Scheduler - INFO - Stealth resting (high) for 73.8s before next search...
-INFO:     connection closed
-INFO:     connection closed
-INFO:     127.0.0.1:52319 - "GET /api/config HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52323 - "GET /api/config HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52320 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52326 - "GET /api/categories HTTP/1.1" 200 OK
-Log WebSocket error: 
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
-    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
-    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
-    await func(session)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
-    await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
-    await websocket.close()
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
-    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
-    raise RuntimeError('Cannot call "send" once a close message has been sent.')
-RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     127.0.0.1:52329 - "WebSocket /ws/logs" [accepted]
-INFO:     connection open
-INFO:     127.0.0.1:52331 - "WebSocket /ws/status" [accepted]
+INFO:     127.0.0.1:64447 - "WebSocket /ws/status" [accepted]
 INFO:     connection open
 INFO:     connection closed
-INFO:     connection closed
-INFO:     127.0.0.1:52335 - "WebSocket /ws/logs" [accepted]
+INFO:     127.0.0.1:64448 - "WebSocket /ws/logs" [accepted]
 INFO:     connection open
-INFO:     127.0.0.1:52337 - "WebSocket /ws/status" [accepted]
+INFO:     connection closed
+INFO:     127.0.0.1:64449 - "WebSocket /ws/status" [accepted]
 INFO:     connection open
 Log WebSocket error: 
 ERROR:    Exception in ASGI application
@@ -265,14 +131,239 @@ Traceback (most recent call last):
     await func(session)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
     await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 116, in websocket_logs
     await websocket.close()
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
     await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
     raise RuntimeError('Cannot call "send" once a close message has been sent.')
 RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     127.0.0.1:52339 - "POST /api/crawl/pause HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52343 - "POST /api/crawl/resume HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52346 - "POST /api/crawl HTTP/1.1" 200 OK
-2026-03-22 18:32:44,601 - Scheduler - INFO - Stealth resting (high) for 72.1s before next search...
+2026-03-23 01:28:37,984 - Scheduler - INFO - Starting AI Summary Sweep...
+INFO:     127.0.0.1:64456 - "POST /api/ai/summarize/trigger HTTP/1.1" 200 OK
+2026-03-23 01:28:37,988 - Scheduler - INFO - Processed 0 missing AI summaries.
+2026-03-23 01:28:42,760 - Scheduler - INFO - Starting hourly AI Market Price Prediction...
+INFO:     127.0.0.1:64459 - "POST /api/ai/predict/trigger HTTP/1.1" 200 OK
+2026-03-23 01:29:14,128 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_missing_summaries (trigger: interval[0:10:00], next run at: 2026-03-23 01:39:14 CST)" (scheduled at 2026-03-23 01:29:14.124377+08:00)
+2026-03-23 01:29:14,131 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_metadata_enrichment (trigger: interval[0:30:00], next run at: 2026-03-23 01:59:14 CST)" (scheduled at 2026-03-23 01:29:14.124422+08:00)
+2026-03-23 01:29:14,131 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_missing_summaries (trigger: interval[0:10:00], next run at: 2026-03-23 01:39:14 CST)" executed successfully
+2026-03-23 01:29:14,132 - Scheduler - INFO - Starting Metadata Enrichment Sweep...
+2026-03-23 01:29:14,140 - Scheduler - INFO - Enriched 0 items with detailed metadata.
+2026-03-23 01:29:14,140 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_metadata_enrichment (trigger: interval[0:30:00], next run at: 2026-03-23 01:59:14 CST)" executed successfully
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:64489 - "GET /api/market-predictions HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 121, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 107, in app
+    response = await f(request)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 228, in get_market_predictions
+    "user_manual_price": p.specification.user_manual_price,
+AttributeError: 'Specification' object has no attribute 'user_manual_price'
+Log WebSocket error: 
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
+    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
+    await func(session)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
+    await dependant.call(**solved_result.values)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 116, in websocket_logs
+    await websocket.close()
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
+    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
+    raise RuntimeError('Cannot call "send" once a close message has been sent.')
+RuntimeError: Cannot call "send" once a close message has been sent.
+INFO:     127.0.0.1:64492 - "GET /api/market-predictions HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 121, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 107, in app
+    response = await f(request)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 228, in get_market_predictions
+    "user_manual_price": p.specification.user_manual_price,
+AttributeError: 'Specification' object has no attribute 'user_manual_price'
+INFO:     127.0.0.1:64502 - "GET /api/products HTTP/1.1" 200 OK
+2026-03-23 01:29:50,154 - Scheduler - INFO - Finished AI Market Price Prediction.
+INFO:     127.0.0.1:64548 - "POST /api/ai/generate-listing HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64633 - "GET /api/market-predictions HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 121, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 107, in app
+    response = await f(request)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 228, in get_market_predictions
+    "user_manual_price": p.specification.user_manual_price,
+AttributeError: 'Specification' object has no attribute 'user_manual_price'
+INFO:     127.0.0.1:64645 - "WebSocket /ws/status" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64641 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64642 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64646 - "GET /api/categories HTTP/1.1" 200 OK

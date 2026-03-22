@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Database, Settings, Activity, Terminal, Tag } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Database, Settings, Activity, Terminal, Tag, Brain, Sparkles } from 'lucide-react';
 
 import Dashboard from './pages/Dashboard';
 import Recommendations from './pages/Recommendations';
@@ -8,6 +8,8 @@ import DataExplorer from './pages/DataExplorer';
 import SettingsPage from './pages/Settings';
 import TerminalLog from './pages/TerminalLog';
 import MarketPrices from './pages/MarketPrices';
+import AIPredictions from './pages/AIPredictions';
+import ListingGenerator from './pages/ListingGenerator';
 
 const NavItem = ({ to, icon: Icon, label }) => (
   <Link to={to} className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-cyan-500/10 hover:text-cyan-400 rounded-lg transition-all duration-300 group">
@@ -36,7 +38,9 @@ function App() {
           <nav className="space-y-4">
             <NavItem to="/" icon={LayoutDashboard} label="行情儀表板" />
             <NavItem to="/market-prices" icon={Tag} label="市場基準價" />
+            <NavItem to="/predictions" icon={Brain} label="AI 市價預測" />
             <NavItem to="/recommendations" icon={ShoppingCart} label="獲利推薦" />
+            <NavItem to="/listing-generator" icon={Sparkles} label="轉售文案" />
             <NavItem to="/data" icon={Database} label="數據總覽" />
             <NavItem to="/terminal" icon={Terminal} label="系統控制中心" />
             <NavItem to="/settings" icon={Settings} label="設定更新" />
@@ -63,7 +67,9 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/market-prices" element={<MarketPrices />} />
+              <Route path="/predictions" element={<AIPredictions />} />
               <Route path="/recommendations" element={<Recommendations />} />
+              <Route path="/listing-generator" element={<ListingGenerator />} />
               <Route path="/data" element={<DataExplorer />} />
               <Route path="/terminal" element={<TerminalLog />} />
               <Route path="/settings" element={<SettingsPage />} />

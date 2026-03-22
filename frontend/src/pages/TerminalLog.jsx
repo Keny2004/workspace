@@ -97,6 +97,14 @@ const TerminalLog = () => {
     axios.post('/api/update-prices').then(() => showNotification("📈 市場行情同步中..."));
   };
 
+  const triggerAISummarize = () => {
+    axios.post('/api/ai/summarize/trigger').then(() => showNotification("🧠 AI 商品總結任務已觸發！"));
+  };
+
+  const triggerAIPredict = () => {
+    axios.post('/api/ai/predict/trigger').then(() => showNotification("🔮 AI 市價預測任務已啟動！"));
+  };
+
   const stopCrawl = () => {
     axios.post('/api/crawl/pause').then(() => {
       showNotification("🛑 爬蟲任務已取消/停止");
@@ -154,6 +162,26 @@ const TerminalLog = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <button 
+              onClick={triggerAISummarize}
+              title="執行 AI 總結"
+              className="flex items-center gap-2 px-4 py-2 bg-magenta-500/10 hover:bg-magenta-500/20 border border-magenta-500/30 text-magenta-400 rounded-xl text-[11px] font-bold transition shadow-sm active:scale-95 cyber-button"
+            >
+              <Brain size={14} />
+              <span className="hidden sm:inline">AI 總結</span>
+            </button>
+
+            <button 
+              onClick={triggerAIPredict}
+              title="執行市價預測"
+              className="flex items-center gap-2 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 rounded-xl text-[11px] font-bold transition shadow-sm active:scale-95 cyber-button"
+            >
+              <Activity size={14} />
+              <span className="hidden sm:inline">AI 預測</span>
+            </button>
+            
+            <div className="w-[1px] h-6 bg-slate-700/50 mx-1" />
+
             <button 
               onClick={triggerUpdate}
               title="重新同步行情"
@@ -288,19 +316,19 @@ const TerminalLog = () => {
                  <ul className="space-y-4 text-[11px] text-gray-500 leading-relaxed font-bold">
                     <li className="flex items-start gap-3">
                         <span className="text-blue-500/50 mt-0.5">•</span>
-                        <span>系統每 6 小時自動執行一次深度掃描。</span>
+                        <span>爬蟲將依照進階防封鎖強度自動隨機延遲 (5-90s)。</span>
                     </li>
                     <li className="flex items-start gap-3">
                         <span className="text-blue-500/50 mt-0.5">•</span>
-                        <span>AI 摘要僅針對「高獲利潛力」商品生成。</span>
+                        <span>遇 403 Forbidden 將自動進入 15 分鐘冷卻避險。</span>
                     </li>
                     <li className="flex items-start gap-3">
                         <span className="text-blue-500/50 mt-0.5">•</span>
-                        <span>若 CPU 負載超過 90%，請檢查日誌輸出。</span>
+                        <span>連刷 502 錯誤達 10 次時，系統將強制暫停搜索。</span>
                     </li>
                     <li className="flex items-start gap-3">
                         <span className="text-blue-500/50 mt-0.5">•</span>
-                        <span>爬蟲遇到 502 錯誤 10 次後將自動停止。</span>
+                        <span>獲利潛力大於門檻之商品，將自動 Telegram 推播。</span>
                     </li>
                  </ul>
             </div>

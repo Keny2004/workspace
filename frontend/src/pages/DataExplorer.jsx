@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Filter, Download, ArrowUpDown, ChevronLeft, ChevronRight, Monitor } from 'lucide-react';
+import { Search, Filter, Download, ArrowUpDown, ChevronLeft, ChevronRight, Monitor, AlertCircle, Zap, Trash2 } from 'lucide-react';
 
 const DataExplorer = () => {
     const [products, setProducts] = useState([]);
@@ -12,12 +12,24 @@ const DataExplorer = () => {
         axios.get('/api/products').then(res => setProducts(res.data));
     }, []);
 
+    const handleDelete = async (id) => {
+        if (window.confirm("確定要刪除此筆推薦嗎？")) {
+            await axios.delete(`/api/products/${id}`);
+            setProducts(products.filter(p => p.id !== id));
+        }
+    };
+
     const filteredProducts = products.filter(p => {
-        const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
+        const pTitle = (p.title || "").toLowerCase();
+        const sTerm = (searchTerm || "").toLowerCase();
+        const matchesSearch = pTitle.includes(sTerm);
         const matchesPlatform = filterPlatform === "All" || p.platform === filterPlatform;
-        const matchesProfit = p.profit_margin_percent >= minProfit;
+        const profit_val = p.estimated_profit || 0;
+        const matchesProfit = profit_val >= minProfit;
         return matchesSearch && matchesPlatform && matchesProfit;
     });
+
+    // ... (rest of the code remains similar, update table rows)
 
     const exportCSV = () => {
         const headers = ["ID", "平台", "標題", "價格", "預估利潤", "利潤率 (%)", "獲利標記", "網址"];
@@ -98,8 +110,17 @@ const DataExplorer = () => {
                                 <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Node_Platform</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Entity_Identity</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Quote_NT$</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Est_Profit</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">ROI_Index</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">Market_Price</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-magenta-500 uppercase tracking-[0.2em]">Est_Profit</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] relative group/roi">
+                                    ROI_Index
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-slate-900 border border-white/10 rounded-xl text-[8px] font-bold lowercase tracking-normal text-gray-400 opacity-0 group-hover/roi:opacity-100 transition-opacity pointer-events-none shadow-2xl z-50">
+                                        Return on Investment (ROI): 
+                                        計算公式：(估計利潤 / 原始價格) * 100%
+                                        數值越高代表利潤空間越大。
+                                    </div>
+                                </th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] whitespace-nowrap min-w-[200px]">機況判定</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Recommendation</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] text-right">Operations</th>
                             </tr>
@@ -113,9 +134,36 @@ const DataExplorer = () => {
                                         </span>
                                     </td>
                                     <td className="px-8 py-5 font-bold text-gray-300 text-xs max-w-md truncate group-hover:text-white transition-colors uppercase tracking-tight">{p.title}</td>
-                                    <td className="px-8 py-5 font-mono font-black text-white text-sm">NT$ {p.price.toLocaleString()}</td>
-                                    <td className="px-8 py-5 font-mono font-black text-magenta-400 text-sm cyber-text-glow">{p.estimated_profit > 0 ? `+ NT$ ${p.estimated_profit.toLocaleString()}` : '-'}</td>
+                                    <td className="px-8 py-5 font-mono font-black text-gray-400 text-sm">NT$ {p.price?.toLocaleString() || '0'}</td>
+                                    <td className="px-8 py-5 font-mono font-black text-blue-400 text-sm">NT$ {p.market_price?.toLocaleString() || '---'}</td>
+                                    <td className="px-8 py-5 font-mono font-black text-magenta-400 text-sm cyber-text-glow">{p.estimated_profit > 0 ? `+ NT$ ${p.estimated_profit?.toLocaleString()}` : '-'}</td>
                                     <td className="px-8 py-5 font-mono font-black text-cyan-400 text-sm">{p.profit_margin_percent > 0 ? `${p.profit_margin_percent}%` : '-'}</td>
+                                    <td className="px-8 py-5 whitespace-nowrap min-w-[200px]">
+                                        <div className="flex flex-col gap-2">
+                                            {p.is_faulty ? (
+                                                <span className="text-amber-500 text-[9px] font-black uppercase flex items-center gap-1 group-hover:scale-105 transition-transform">
+                                                    <AlertCircle size={12} /> 偵測到故障
+                                                </span>
+                                            ) : (
+                                                <span className="text-emerald-500 text-[9px] font-black uppercase flex items-center gap-1">
+                                                    <Zap size={12} className="fill-current" /> 功能正常
+                                                </span>
+                                            )}
+                                            {p.tags && (
+                                                <div className="flex flex-wrap gap-1 max-w-[250px] whitespace-normal">
+                                                    {p.tags.split(',').map(tag => (
+                                                        <span key={tag} className={`px-1.5 py-0.5 text-[8px] font-black border rounded whitespace-nowrap ${
+                                                            p.is_faulty 
+                                                            ? 'bg-amber-500/10 text-amber-500/80 border-amber-500/20' 
+                                                            : 'bg-cyan-500/10 text-cyan-400/80 border-cyan-500/20'
+                                                        }`}>
+                                                            #{tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td className="px-8 py-5">
                                         {p.is_potential_profit ? (
                                             <span className="flex items-center gap-2 text-magenta-400 text-[10px] font-black uppercase tracking-widest cyber-text-glow animate-pulse">
@@ -125,7 +173,14 @@ const DataExplorer = () => {
                                             <span className="text-gray-700 text-[10px] font-black uppercase tracking-widest">NONE</span>
                                         )}
                                     </td>
-                                    <td className="px-8 py-5 text-right">
+                                    <td className="px-8 py-5 text-right flex justify-end gap-4">
+                                        <button 
+                                          onClick={() => handleDelete(p.id)}
+                                          className="p-2 bg-slate-950 border border-white/10 rounded-xl text-gray-500 hover:text-magenta-500 hover:border-magenta-500/50 transition-all"
+                                          title="DELETE_NODES"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
                                         <a 
                                           href={p.url} 
                                           target="_blank" 

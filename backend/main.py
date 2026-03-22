@@ -3,10 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 import asyncio
+import datetime
+from typing import List, Optional, Union
 import psutil
 import json
 import os
 
+import datetime
 from .database import get_db, init_db
 from . import models
 from .services.scheduler import SchedulerService
@@ -33,8 +36,12 @@ def on_startup():
     for key, val in [
         ("profit_margin_手機", "5"),
         ("profit_margin_平板", "10"),
-        ("profit_margin_筆電", "15"),
-        ("custom_proxies", "")
+        ("ollama_model", "qwen3.5:4b"),
+        ("app_url", "http://localhost:3000"),
+        ("crawl_interval_mins", "30"),
+        ("ai_prediction_interval_hours", "1"),
+        ("summary_sweep_interval_mins", "10"),
+        ("metadata_enrichment_interval_mins", "15")
     ]:
         if not db.query(models.SystemConfig).filter(models.SystemConfig.key == key).first():
             db.add(models.SystemConfig(key=key, value=val))
@@ -120,22 +127,18 @@ def get_products(is_potential: bool = False, db: Session = Depends(get_db)):
     for p in products:
         spec = p.specification
         if not spec or not spec.is_monitored: continue
+        # 1. Target Market Price (using centralized logic)
+        from .services.product_service import ProductService
+        ps = ProductService(db)
+        target_market_price = ps.get_target_price(spec)
         
-        # 1. Hybrid Benchmark Calculation
-        benchmarks = db.query(models.MarketPrice).filter(models.MarketPrice.specification_id == p.specification_id).all()
-        portal_price = max([b.price for b in benchmarks]) if benchmarks else 0
-        
-        # median of this spec's listings
-        listing_prices = [lp.price for lp in db.query(models.ScrapedProduct.price).filter(models.ScrapedProduct.specification_id == p.specification_id).all()]
-        listing_median = 0
-        if listing_prices:
-            s_prices = sorted(listing_prices)
-            n = len(s_prices)
-            listing_median = s_prices[n//2] if n % 2 != 0 else (s_prices[n//2-1] + s_prices[n//2])/2
-            
-        true_market_price = max(portal_price, listing_median)
-        est_profit = true_market_price - p.price if true_market_price > 0 else 0
-        profit_percent = round((est_profit / p.price) * 100, 1) if p.price > 0 else 0
+        # Only show profit if the item passed our potential profit filters
+        if p.is_potential_profit:
+            est_profit = target_market_price - p.price if target_market_price > 0 else 0
+            profit_percent = round((est_profit / p.price) * 100, 1) if p.price > 0 else 0
+        else:
+            est_profit = 0
+            profit_percent = 0
         
         result.append({
             "id": p.id,
@@ -145,13 +148,18 @@ def get_products(is_potential: bool = False, db: Session = Depends(get_db)):
             "platform": p.platform,
             "title": p.title,
             "price": p.price,
-            "market_price": true_market_price,
+            "market_price": target_market_price,
             "estimated_profit": est_profit,
             "profit_margin_percent": profit_percent,
             "url": p.url,
             "scraped_at": p.scraped_at,
+            "description": p.description,
+            "metadata": p.raw_metadata,
             "ai_summary": p.ai_summary,
-            "is_potential_profit": p.is_potential_profit
+            "is_potential": p.is_potential_profit,
+            "is_ai_validated": p.is_ai_validated,
+            "is_faulty": p.is_faulty,
+            "tags": p.tags
         })
     return result
 
@@ -161,12 +169,103 @@ def get_market_prices(spec_id: int, db: Session = Depends(get_db)):
         models.MarketPrice.specification_id == spec_id
     ).order_by(models.MarketPrice.updated_at.asc()).all()
 
+@app.get("/api/stats")
+def get_stats(db: Session = Depends(get_db)):
+    from .models import CrawlerStats
+    # Get today's stats and overall stats
+    today = datetime.datetime.now().date()
+    today_stat = db.query(CrawlerStats).filter(
+        CrawlerStats.date >= datetime.datetime.combine(today, datetime.time.min),
+        CrawlerStats.date <= datetime.datetime.combine(today, datetime.time.max)
+    ).first()
+    
+    total_scanned = db.query(models.ScrapedProduct).count()
+    total_potential = db.query(models.ScrapedProduct).filter(models.ScrapedProduct.is_potential_profit == True).count()
+    
+    return {
+        "today": {
+            "scanned": today_stat.scanned_count if today_stat else 0,
+            "filtered": today_stat.filtered_count if today_stat else 0,
+            "potential": today_stat.potential_count if today_stat else 0
+        },
+        "overall": {
+            "scanned": total_scanned,
+            "potential": total_potential
+        }
+    }
+
+@app.delete("/api/products/{product_id}")
+def delete_product(product_id: int, db: Session = Depends(get_db)):
+    product = db.query(models.ScrapedProduct).filter(models.ScrapedProduct.id == product_id).first()
+    if product:
+        db.delete(product)
+        db.commit()
+    return {"status": "success"}
+
+@app.get("/api/market-predictions")
+def get_market_predictions(db: Session = Depends(get_db)):
+    from .models import MarketPrediction, Specification
+    from sqlalchemy.orm import joinedload
+    predictions = db.query(MarketPrediction).options(joinedload(MarketPrediction.specification)).all()
+    # Add manual price from specification to the response
+    results = []
+    import json
+    for p in predictions:
+        ai_data = None
+        if p.ai_analysis:
+            try:
+                ai_data = json.loads(p.ai_analysis)
+            except:
+                ai_data = None
+                
+        results.append({
+            "id": p.id,
+            "specification_id": p.specification_id,
+            "specification_name": p.specification.name,
+            "predicted_price": p.predicted_price,
+            "sample_size": p.sample_size,
+            "updated_at": p.updated_at,
+            "user_manual_price": p.specification.user_manual_price,
+            "ai_analysis": ai_data
+        })
+    return results
+
 @app.get("/api/categories")
 def get_categories(db: Session = Depends(get_db)):
-    from sqlalchemy.orm import joinedload
-    return db.query(models.Category).options(
-        joinedload(models.Category.models).joinedload(models.ProductModel.specifications)
-    ).all()
+    categories = db.query(models.Category).all()
+    results = []
+    for cat in categories:
+        cat_dict = {
+            "id": cat.id,
+            "name": cat.name,
+            "custom_margin": cat.custom_margin,
+            "models": []
+        }
+        for model in cat.models:
+            model_dict = {
+                "id": model.id,
+                "name": model.name,
+                "specifications": []
+            }
+            for spec in model.specifications:
+                model_dict["specifications"].append({
+                    "id": spec.id,
+                    "name": spec.name,
+                    "is_monitored": spec.is_monitored,
+                    "custom_margin": spec.custom_margin
+                })
+            cat_dict["models"].append(model_dict)
+        results.append(cat_dict)
+    return results
+
+@app.post("/api/categories/{category_id}/margin")
+def update_category_margin(category_id: int, margin_data: dict, db: Session = Depends(get_db)):
+    cat = db.query(models.Category).filter(models.Category.id == category_id).first()
+    if not cat:
+        return {"status": "error", "message": "Category not found"}
+    cat.custom_margin = margin_data.get('margin')
+    db.commit()
+    return {"status": "success", "margin": cat.custom_margin}
 
 @app.get("/api/config")
 def get_config(db: Session = Depends(get_db)):
@@ -181,6 +280,8 @@ def update_config(config_data: dict, db: Session = Depends(get_db)):
         else:
             db.add(models.SystemConfig(key=key, value=str(value)))
     db.commit()
+    # 重新加載排程間隔
+    scheduler.reload_intervals()
     return {"status": "success"}
 @app.post("/api/crawl")
 def trigger_crawl():
@@ -190,6 +291,18 @@ def trigger_crawl():
         return {"status": "error", "message": "Crawler is paused. Resume it first."}
     import threading
     threading.Thread(target=scheduler.crawl_products).start()
+    return {"status": "started"}
+
+@app.post("/api/ai/summarize/trigger")
+def trigger_ai_summarization():
+    import threading
+    threading.Thread(target=scheduler.sweep_missing_summaries).start()
+    return {"status": "started"}
+
+@app.post("/api/ai/predict/trigger")
+def trigger_ai_predict():
+    import threading
+    threading.Thread(target=scheduler.run_ai_predictions).start()
     return {"status": "started"}
 
 @app.post("/api/crawl/pause")
@@ -316,10 +429,15 @@ def get_all_market_prices(db: Session = Depends(get_db)):
                 "price": p.price,
                 "source": p.source or "Unknown",
                 "updated_at": p.updated_at,
-                "is_monitored": spec.is_monitored
+                "is_monitored": spec.is_monitored,
+                "custom_margin": spec.custom_margin
             })
             
     return latest_prices
+
+    spec.is_monitored = not spec.is_monitored
+    db.commit()
+    return {"status": "success", "is_monitored": spec.is_monitored}
 
 @app.post("/api/specifications/{spec_id}/toggle-monitor")
 def toggle_monitor(spec_id: int, db: Session = Depends(get_db)):
@@ -331,9 +449,34 @@ def toggle_monitor(spec_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "success", "is_monitored": spec.is_monitored}
 
+class SpecificationUpdateRequest(BaseModel):
+    custom_margin: Optional[float] = None
+    is_monitored: Optional[bool] = None
+
+@app.patch("/api/specifications/{spec_id}")
+def update_specification(spec_id: int, req: SpecificationUpdateRequest, db: Session = Depends(get_db)):
+    spec = db.query(models.Specification).filter(models.Specification.id == spec_id).first()
+    if not spec:
+        return {"status": "error", "message": "Specification not found"}
+    
+    if req.custom_margin is not None:
+        spec.custom_margin = req.custom_margin
+    if req.is_monitored is not None:
+        spec.is_monitored = req.is_monitored
+        
+    db.commit()
+    return {"status": "success"}
+
 class ImportURLRequest(BaseModel):
     url: str
     category_id: int
+
+class ManualPriceRequest(BaseModel):
+    category: str
+    model: str
+    specification: str
+    price: float
+    custom_margin: Optional[float] = None
 
 @app.post("/api/admin/db-cleanup")
 def cleanup_database(db: Session = Depends(get_db)):
@@ -432,3 +575,104 @@ def import_valuation_url(req: ImportURLRequest, db: Session = Depends(get_db)):
         db.commit()
     
     return {"status": "success", "imported_count": count}
+
+@app.post("/api/market-prices/manual")
+def create_manual_price(req: ManualPriceRequest, db: Session = Depends(get_db)):
+    # 1. Get/Create Category
+    cat = db.query(models.Category).filter(models.Category.name == req.category).first()
+    if not cat:
+        cat = models.Category(name=req.category)
+        db.add(cat)
+        db.commit()
+        db.refresh(cat)
+    
+    # 2. Get/Create Model
+    pmodel = db.query(models.ProductModel).filter(
+        models.ProductModel.category_id == cat.id,
+        models.ProductModel.name == req.model
+    ).first()
+    if not pmodel:
+        pmodel = models.ProductModel(category_id=cat.id, name=req.model)
+        db.add(pmodel)
+        db.commit()
+        db.refresh(pmodel)
+        
+    # 3. Get/Create Specification
+    spec = db.query(models.Specification).filter(
+        models.Specification.model_id == pmodel.id,
+        models.Specification.name == req.specification
+    ).first()
+    if not spec:
+        spec = models.Specification(model_id=pmodel.id, name=req.specification, is_monitored=True)
+        db.add(spec)
+        db.commit()
+        db.refresh(spec)
+    else:
+        # User manually added it, so they probably want to monitor it
+        spec.is_monitored = True
+    
+    # 4. Create/Update MarketPrice
+    mprice = db.query(models.MarketPrice).filter(
+        models.MarketPrice.specification_id == spec.id,
+        models.MarketPrice.source == "Manual"
+    ).first()
+    
+    if mprice:
+        mprice.price = req.price
+        mprice.updated_at = datetime.datetime.utcnow()
+    else:
+        mprice = models.MarketPrice(
+            specification_id=spec.id,
+            price=req.price,
+            source="Manual"
+        )
+        db.add(mprice)
+    
+    if req.custom_margin is not None:
+        spec.custom_margin = req.custom_margin
+    
+    db.commit()
+    return {"status": "success"}
+
+class ListingRequest(BaseModel):
+    product_name: str
+    condition: str
+    target_price: str
+    platform: str
+
+@app.post("/api/ai/generate-listing")
+def generate_listing(req: ListingRequest, db: Session = Depends(get_db)):
+    from .config_utils import get_config_value
+    import requests
+    
+    ollama_url = get_config_value("ollama_url", "http://localhost:11434/api/generate")
+    model = get_config_value("ollama_model", "qwen3.5:4b")
+    
+    prompt = f"""你是一個專業的二手 3C 拍賣賣家，請幫我寫一篇吸引人的商品銷售文案。
+目標平台：{req.platform}
+商品名稱：{req.product_name}
+商品機況：{req.condition}
+預計售價：{req.target_price}
+
+要求格式：
+1. 【吸睛標題】(包含必要關鍵字與狀態)
+2. 【商品特色/機況描述】(將機況包裝得專業、真誠)
+3. 【交易方式】(面交/寄送)
+4. 最下方加上 5-8 個熱門 Hashtag。
+
+請直接依照格式輸出文案結果，不需要其他的開場白或結語：
+"""
+    try:
+        response = requests.post(ollama_url, json={
+            "model": model,
+            "prompt": prompt,
+            "stream": False
+        }, timeout=300)
+        if response.status_code == 200:
+            result_text = response.json().get("response", "").strip()
+            return {"status": "success", "data": result_text}
+    except Exception as e:
+        print(f"Listing generation failed: {e}")
+        return {"status": "error", "message": str(e)}
+        
+    return {"status": "error", "message": "Failed to connect to AI model"}

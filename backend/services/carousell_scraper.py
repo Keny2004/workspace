@@ -1,223 +1,210 @@
-import requests
+from curl_cffi import requests
+from bs4 import BeautifulSoup
 import re
+import time
+import random
+import urllib.parse
 import json
 from typing import List, Dict, Any, Optional
 from .scraper_base import BaseScraper
-from .proxy_service import ProxyService
 
 class CarousellScraper(BaseScraper):
     def __init__(self):
         self.base_url = "https://tw.carousell.com"
-        self.search_api = "https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW"
-        self.session = requests.Session()
-        self.proxy_service = ProxyService()
-        self.current_proxy = None
-        self.ua_pool = [
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0",
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1"
-        ]
-        self._set_random_headers()
-
-    def _set_random_headers(self):
-        import random
-        ua = random.choice(self.ua_pool)
+        self.user_agents = ["chrome120"]
+        self.session = requests.Session(impersonate="chrome120")
         
-        # Determine platform for Sec-CH-UA
-        platform = "Windows"
-        if "Macintosh" in ua: platform = "macOS"
-        elif "iPhone" in ua: platform = "iOS"
-        elif "Linux" in ua: platform = "Linux"
-
-        self.session.headers.update({
-            "User-Agent": ua,
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Origin": "https://tw.carousell.com",
-            "Referer": "https://tw.carousell.com/",
-            "Sec-Ch-Ua-Platform": f"\"{platform}\"",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin",
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache"
-        })
-
-    def warm_up(self, proxies: Optional[dict] = None):
-        """Simulate a human visiting the home page to get valid session context"""
-        try:
-            self._set_random_headers()
-            self.session.get(self.base_url, timeout=15, proxies=proxies)
-            # Small delay after home page visit
-            import time, random
-            time.sleep(random.uniform(2, 4))
-            return True
-        except Exception as e:
-            print(f"Warm-up failed: {e}")
-            return False
-
     @property
     def platform_name(self) -> str:
         return "Carousell"
 
-    def _get_csrf_token(self, proxies: Optional[dict] = None) -> Optional[str]:
-        p_display = self.current_proxy if self.current_proxy else "Direct IP"
+    def search(self, query: str, count: int = 48) -> List[Dict[str, Any]]:
+        """
+        利用 curl_cffi 繞過 Cloudflare 防護，抓取旋轉拍賣商品列表 (HTML 解析版)
+        """
+        encoded_keyword = urllib.parse.quote(query, safe='')
+        # sort_by=3 代表最新
+        url = f"{self.base_url}/search/{encoded_keyword}?sort_by=3"
+        
+        print(f"Searching Carousell (HTML) for '{query}': {url}")
+        
+        # 隨機延遲
+        time.sleep(random.uniform(3.0, 7.0))
+        
         try:
-            print(f"Attempting to get CSRF token with {p_display}...")
-            response = self.session.get(self.base_url, proxies=proxies, timeout=15)
+            # 隨機選擇模擬身份
+            impersonate = random.choice(self.user_agents)
+            response = self.session.get(url, impersonate=impersonate, timeout=20)
             
             if response.status_code == 403:
-                print(f"403 Forbidden detected on {p_display} during CSRF check.")
-                if not self.current_proxy:
-                    self.block_direct_ip = True
-                self.session.cookies.clear()
-                self.current_proxy = self.proxy_service.get_working_proxy()
-                return None # Trigger retry in search loop
+                print(f"403 Forbidden on Carousell HTML search. Triggering backoff...")
+                raise RuntimeError("FORBIDDEN_403")
                 
-            csrf_token = self.session.cookies.get("_csrf")
-            if not csrf_token:
-                match = re.search(r'"csrfToken":"([^"]+)"', response.text)
-                if match: csrf_token = match.group(1)
-            return csrf_token
+            response.raise_for_status()
+        except RuntimeError as re_err:
+            if str(re_err) == "FORBIDDEN_403":
+                raise re_err
+            print(f"Carousell search failed: {re_err}")
+            return []
         except Exception as e:
-            print(f"Error getting CSRF token: {e}")
-            return None
+            print(f"Carousell search failed: {e}")
+            return []
 
-    def search(self, query: str, count: int = 48) -> List[Dict[str, Any]]:
-        payload = {
-            "bestMatchEnabled": True,
-            "canChangeKeyword": False,
-            "count": count,
-            "countryCode": "TW",
-            "countryId": "1668284",
-            "filters": [],
-            "includeBpEducationBanner": True,
-            "includeListingDescription": True, 
-            "includePopularLocations": False,
-            "includeSuggestions": True,
-            "isCertifiedSpotlightEnabled": False,
-            "locale": "zh-Hant-TW",
-            "prefill": {},
-            "query": query
-        }
-
-        import time
-        import random
+        soup = BeautifulSoup(response.text, 'html.parser')
         
-        max_attempts = 3
-        # Ensure block_direct_ip persists if not initialized
-        if not hasattr(self, 'block_direct_ip'):
-            self.block_direct_ip = False
+        # 尋找所有商品區塊 (使用使用者提供的精準 Regex)
+        product_cards = soup.find_all('div', attrs={'data-testid': re.compile(r'^listing-card-')})
         
-        for attempt in range(1, max_attempts + 1):
-            if (not self.current_proxy) and self.block_direct_ip:
-                print("Direct IP is blocked. Forcing proxy usage...")
-                self.current_proxy = self.proxy_service.get_working_proxy()
-            
-            proxies = None
-            if self.current_proxy:
-                proxies = {"http": f"http://{self.current_proxy}", "https": f"http://{self.current_proxy}"}
-            
-            p_display = self.current_proxy if self.current_proxy else "Direct IP"
-            print(f"Attempt {attempt}/{max_attempts} for {query} using {p_display}...")
-
+        items = []
+        thirty_days_ago = time.time() - (30 * 24 * 60 * 60)
+        
+        for card in product_cards:
             try:
-                # Shorter human-like jitter: 3-7 seconds
-                wait_time = random.uniform(3.0, 7.0)
-                print(f"Human-like jitter: Waiting {wait_time:.1f}s before request...")
-                time.sleep(wait_time)
-
-                if not self.session.cookies.get("_csrf") or attempt > 1:
-                     self.warm_up(proxies=proxies)
+                # 抓取連結
+                product_link = card.find('a', href=re.compile(r'^/p/'))
+                if not product_link:
+                    product_link = card.find('a', href=True)
+                    if not product_link: continue
                 
-                csrf_token = self._get_csrf_token(proxies=proxies)
-                if not csrf_token:
-                    # If CSRF failed (likely 403), retry within the loop
-                    print("CSRF retrieval failed. Retrying with new proxy...")
-                    self.current_proxy = self.proxy_service.get_working_proxy()
+                relative_url = product_link.get('href')
+                full_url = f"{self.base_url}{relative_url}"
+                
+                # 抓取標題 (優先從 img alt/title，其次從 P 標籤)
+                img_tag = card.find('img')
+                title = "無標題"
+                if img_tag and (img_tag.get('title') or img_tag.get('alt')):
+                    title = img_tag.get('title') or img_tag.get('alt')
+                else:
+                    title_p = card.find('p', style=re.compile(r'-webkit-line-clamp:\s*2'))
+                    if title_p:
+                        title = title_p.text.strip()
+                
+                # 抓取圖片
+                image_url = img_tag.get('src') if img_tag else ""
+                
+                # 抓取價格
+                price_p = card.find('p', string=re.compile(r'NT\$'))
+                price_str = price_p.text.strip() if price_p else "NT$ 0"
+                price = float(re.sub(r'[^\d]', '', price_str))
+                
+                # 抓取時間 (判斷是否為 30 天內)
+                time_node = card.find('p', string=re.compile(r'(分鐘|小時|天|剛剛|昨天|個月)'))
+                time_str = time_node.text.strip() if time_node else ""
+                
+                # 過濾超過 1 個月的
+                if "個月" in time_str:
+                    try:
+                        match = re.search(r'(\d+)', time_str)
+                        if match:
+                            months = int(match.group(1))
+                            if months > 1: continue
+                    except: pass
+                
+                # 如果是具體日期 (例如 1月12日) 且不包含 "前" 字樣，通常代表比較久以前的物件
+                if "月" in time_str and "前" not in time_str:
+                    # 簡單判斷：如果包含 "月" 但不是 "XX個月前"，可能是具體日期，通常比較舊
                     continue
 
-                if csrf_token:
-                    self.session.headers.update({
-                        "csrf-token": csrf_token,
-                        "Content-Type": "application/json"
-                    })
-
-                response = self.session.post(self.search_api, json=payload, timeout=20, proxies=proxies)
-                last_status = response.status_code
+                # 提取商品ID
+                url_parts = relative_url.split('/')
+                parts_filtered = [p for p in url_parts if p]
+                item_id = ""
+                if len(parts_filtered) > 1:
+                    id_match = re.search(r'-(\d+)\/?$', parts_filtered[1])
+                    if id_match:
+                        item_id = id_match.group(1)
                 
-                if response.status_code == 403:
-                    print(f"403 Forbidden detected on {p_display}. Rotating...")
-                    if not self.current_proxy:
-                        self.block_direct_ip = True
-                    self.session.cookies.clear()
-                    self.current_proxy = self.proxy_service.get_working_proxy()
-                    continue
-
-                if response.status_code == 502:
-                    print(f"502 detected on {p_display}. Rotating...")
-                    self.current_proxy = self.proxy_service.get_working_proxy()
-                    continue
-                
-                response.raise_for_status()
-                results_data = response.json()
-                break 
-                
-            except Exception as e:
-                print(f"Attempt {attempt} failed on {p_display}: {e}")
-                self.current_proxy = self.proxy_service.get_working_proxy()
-                if attempt == max_attempts:
-                    if last_status == 403: raise Exception("PERSISTENT_403")
-                    if last_status == 502: raise Exception("PERSISTENT_502")
-                    return []
-                continue
-        
-        if not results_data:
-            return []
-
-        try:
-            results = results_data.get("data", {}).get("results", [])
-            standardized_results = []
-            
-            thirty_days_ago = time.time() - (30 * 24 * 60 * 60)
-
-            for item in results:
-                card = item.get("listingCard", {})
-                if not card: continue
-                
-                # Date Filtering: Only products within one month
-                # Carousell Card often has 'secondsSinceEpoch' or similar in meta
-                listing_time = card.get("secondsSinceEpoch") or card.get("timePassed")
-                if listing_time and isinstance(listing_time, (int, float)):
-                    # If it's status time, it might be seconds since epoch
-                    if listing_time < thirty_days_ago and listing_time > 1000000000: # Simple epoch check
-                        continue
-
-                description = ""
-                below_fold = card.get("belowFold", [])
-                for component in below_fold:
-                    if component.get("component") == "paragraph":
-                        description = component.get("stringContent", "")
-                        break
-
-                price_str = card.get("price", "0").replace("NT$", "").replace(",", "").strip()
-                try:
-                    price = float(price_str)
-                except:
-                    price = 0.0
-
-                standardized_results.append({
-                    "external_id": str(card.get("id")),
-                    "title": card.get("title"),
-                    "description": description,
+                if not item_id:
+                    item_id = str(hash(full_url))
+                    
+                items.append({
+                    "external_id": item_id,
+                    "title": title,
                     "price": price,
-                    "url": f"{self.base_url}/p/{card.get('id')}",
-                    "image_url": card.get("photoUrls", [None])[0]
+                    "url": full_url,
+                    "image_url": image_url,
+                    "description": "" 
                 })
-            return standardized_results
+            except Exception as e:
+                continue
+                
+        print(f"Successfully scraped {len(items)} items from Carousell (Keyword: {query})")
+        return items
+
+    def get_item_details(self, url: str) -> Dict[str, Any]:
+        """
+        抓取商品詳情頁，從 initialState JSON 中獲取精確描述、狀況、地點等
+        """
+        print(f"Fetching details from Carousell: {url}")
+        time.sleep(random.uniform(2.0, 4.0))
+        
+        try:
+            response = self.session.get(url, impersonate=random.choice(self.user_agents), timeout=20)
+            response.raise_for_status()
+            html = response.text
+            soup = BeautifulSoup(html, 'html.parser')
+            
+            # Extract via initialState JSON (more robust than DOM)
+            item_data = {}
+            for script in soup.find_all('script'):
+                if script.string and ('"listingCard"' in script.string or 'initialState' in script.string):
+                    content = script.string.strip()
+                    # Try to find JSON block
+                    match = re.search(r'({.*})', content)
+                    if match:
+                        try:
+                            item_data = json.loads(match.group(1))
+                            break
+                        except: continue
+
+            # Recursive search for listing details in JSON
+            def find_listing(obj):
+                if isinstance(obj, dict):
+                    if 'id' in obj and 'description' in obj and 'condition' in obj:
+                        return obj
+                    for v in obj.values():
+                        res = find_listing(v)
+                        if res: return res
+                elif isinstance(obj, list):
+                    for v in obj:
+                        res = find_listing(v)
+                        if res: return res
+                return None
+
+            listing = find_listing(item_data)
+            
+            if listing:
+                # Map condition code
+                cond_map = {
+                    "1": "全新",
+                    "2": "幾乎全新",
+                    "3": "狀況良好",
+                    "4": "輕微使用痕跡",
+                    "5": "明顯使用痕跡",
+                    "6": "損壞/零件機"
+                }
+                raw_cond = str(listing.get('condition', ''))
+                
+                return {
+                    "description": listing.get('description', ''),
+                    "status": cond_map.get(raw_cond, raw_cond if raw_cond else "未知"),
+                    "transaction": listing.get('sourceDisplayValue', ''), # This often has pickup info
+                    "posted_at": listing.get('timeDiff', ''),
+                    "location": listing.get('locationName', '')
+                }
+            
+            # Fallback to Regex for description if JSON fail
+            desc_match = re.search(r'"description":"(.*?)"', html)
+            description = desc_match.group(1).encode().decode('unicode_escape') if desc_match else ""
+            
+            return {
+                "description": description,
+                "status": "未知",
+                "transaction": "",
+                "posted_at": "",
+                "location": ""
+            }
+
         except Exception as e:
-            print(f"Search failed for {query}: {e}")
-            return []
+            print(f"Failed to fetch details for {url}: {e}")
+            return {}

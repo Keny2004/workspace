@@ -3,12 +3,12 @@
 > vite
 
 
-  VITE v5.4.21  ready in 190 ms
+  VITE v5.4.21  ready in 184 ms
 
   ➜  Local:   http://localhost:3000/
   ➜  Network: http://192.168.0.116:3000/
   ➜  Network: http://100.118.174.42:3000/
-下午6:31:58 [vite] warning: Duplicate key "crawler_stealth_level" in object literal
+上午12:59:15 [vite] warning: Duplicate key "crawler_stealth_level" in object literal
 34 |      app_url: "http://localhost:3000",
 35 |      custom_proxies: "",
 36 |      crawler_stealth_level: "high"

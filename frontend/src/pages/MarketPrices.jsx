@@ -1,35 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Filter, ArrowUpDown, ChevronRight, Monitor, Smartphone, Laptop, Tablet, Hash, Zap, Loader2 } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, ChevronRight, Monitor, Smartphone, Laptop, Tablet, Hash, Zap, Loader2, Edit3, X, TrendingUp } from 'lucide-react';
 
 const MarketPrices = () => {
     const [prices, setPrices] = useState([]);
+    
+    // Group by specification to find benchmarks
+    const specBenchmarks = prices.reduce((acc, p) => {
+        if (!acc[p.specification_id] || p.price > acc[p.specification_id]) {
+            acc[p.specification_id] = p.price;
+        }
+        return acc;
+    }, {});
     const [searchTerm, setSearchTerm] = useState("");
     const [filterCategory, setFilterCategory] = useState("All");
     const [platformFilter, setPlatformFilter] = useState("All");
-    const [margins, setMargins] = useState({ "手機": 5, "平板": 10, "筆電": 15 });
-    const [filterMonitor, setFilterMonitor] = useState("All"); // All, Monitored, Unmonitored
+    const [margins, setMargins] = useState({});
+    const [categoryData, setCategoryData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [filterMonitor, setFilterMonitor] = useState("All");
+    const [showManualModal, setShowManualModal] = useState(false);
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [manualForm, setManualForm] = useState({
+        category: "手機",
+        model: "",
+        specification: "",
+        price: ""
+    });
+    const [submitting, setSubmitting] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editForm, setEditForm] = useState({
+        spec_id: null,
+        category: "",
+        model: "",
+        specification: "",
+        price: "",
+        custom_margin: ""
+    });
     
     useEffect(() => {
         refreshData();
     }, []);
 
     const refreshData = () => {
+        setLoading(true);
         Promise.all([
             axios.get('/api/market-prices/all'),
-            axios.get('/api/config')
-        ]).then(([pricesRes, configRes]) => {
+            axios.get('/api/categories')
+        ]).then(([pricesRes, catsRes]) => {
             setPrices(pricesRes.data);
+            setCategoryData(catsRes.data);
             
-            // Map category margins
-            const newMargins = { "手機": 5, "平板": 10, "筆電": 15 };
-            configRes.data.forEach(c => {
-                if (c.key === "profit_margin_手機") newMargins["手機"] = parseFloat(c.value);
-                if (c.key === "profit_margin_平板") newMargins["平板"] = parseFloat(c.value);
-                if (c.key === "profit_margin_筆電") newMargins["筆電"] = parseFloat(c.value);
+            const m = {};
+            catsRes.data.forEach(c => {
+                m[c.name] = c.custom_margin;
             });
-            setMargins(newMargins);
+            setMargins(m);
         }).catch(err => console.error("Load failed", err))
           .finally(() => setLoading(false));
     };
@@ -46,9 +73,74 @@ const MarketPrices = () => {
         });
     };
 
+    const handleManualSubmit = (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        axios.post('/api/market-prices/manual', {
+            ...manualForm,
+            price: parseFloat(manualForm.price)
+        }).then(res => {
+            if (res.data.status === "success") {
+                setShowManualModal(false);
+                setManualForm({ category: "手機", model: "", specification: "", price: "" });
+                refreshData();
+            }
+        }).catch(err => alert("提交失敗: " + err.message))
+          .finally(() => setSubmitting(false));
+    };
+
+    const handleEditClick = (p) => {
+        setEditForm({
+            spec_id: p.specification_id,
+            category: p.category,
+            model: p.model,
+            specification: p.specification,
+            price: p.price,
+            custom_margin: p.custom_margin !== null ? p.custom_margin : ""
+        });
+        setShowEditModal(true);
+    };
+
+    const handleEditSubmit = (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        
+        axios.post('/api/market-prices/manual', {
+            category: editForm.category,
+            model: editForm.model,
+            specification: editForm.specification,
+            price: parseFloat(editForm.price),
+            custom_margin: editForm.custom_margin === "" ? null : parseFloat(editForm.custom_margin)
+        }).then(res => {
+            if (res.data.status === "success") {
+                setShowEditModal(false);
+                refreshData();
+            }
+        }).catch(err => alert("更新失敗: " + err.message))
+          .finally(() => setSubmitting(false));
+    };
+
+    const handleCategoryMarginSubmit = (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        axios.post(`/api/categories/${selectedCategory.id}/margin`, {
+            margin: parseFloat(selectedCategory.custom_margin)
+        }).then(res => {
+            if (res.data.status === "success") {
+                setShowCategoryModal(false);
+                setSelectedCategory(null);
+                refreshData();
+            }
+        }).catch(err => alert("更新類別加成失敗: " + err.message))
+          .finally(() => setSubmitting(false));
+    };
+
     const filteredPrices = prices.filter(p => {
-        const matchesSearch = p.model.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                             p.specification.toLowerCase().includes(searchTerm.toLowerCase());
+        const pModel = (p.model || "").toLowerCase();
+        const pSpec = (p.specification || "").toLowerCase();
+        const sTerm = (searchTerm || "").toLowerCase();
+        
+        const matchesSearch = pModel.includes(sTerm) || pSpec.includes(sTerm);
         const matchesCategory = filterCategory === "All" || p.category === filterCategory;
         const matchesPlatform = platformFilter === "All" || p.source === platformFilter;
         const matchesMonitor = filterMonitor === "All" || 
@@ -100,7 +192,21 @@ const MarketPrices = () => {
                         </div>
                     </div>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-4 items-center">
+                    <button 
+                        onClick={() => setShowManualModal(true)}
+                        className="flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
+                    >
+                        <Zap size={14} className="fill-current" />
+                        手動新增行情
+                    </button>
+                    <button 
+                        onClick={() => setShowCategoryModal(true)} // Note: This will be handled by a simpler list view or we just pick from available categories
+                        className="flex items-center gap-2 bg-slate-900/80 border border-white/5 hover:border-blue-500/50 text-gray-400 hover:text-blue-400 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
+                    >
+                        <TrendingUp size={14} />
+                        類別加成設定
+                    </button>
                     <div className="flex items-center gap-3 bg-slate-900/80 border border-white/5 px-6 py-3 rounded-2xl backdrop-blur-md">
                         <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Node_Platform</span>
                         <div className="flex gap-2">
@@ -199,20 +305,19 @@ const MarketPrices = () => {
                                 </td>
                                 <td className="px-8 py-4">
                                     <div className="flex items-center gap-1.5">
-                                        <span className={`text-lg font-black transition-colors ${p.is_monitored ? 'text-white cyber-text-glow' : 'text-gray-400'}`}>NT$ {p.price.toLocaleString()}</span>
+                                        <span className={`text-lg font-black transition-colors ${p.is_monitored ? 'text-white cyber-text-glow' : 'text-gray-400'}`}>NT$ {p.price?.toLocaleString() || '0'}</span>
                                     </div>
                                 </td>
                                 <td className="px-8 py-4">
                                     <div className="flex items-center gap-1.5 animate-pulse-slow">
                                         <div className="flex flex-col">
                                             <span className="text-xl font-black text-blue-400">
-                                                NT$ {Math.round(p.price * (1 + (margins[p.category] || 5) / 100)).toLocaleString()}
+                                                NT$ {Math.round((specBenchmarks[p.specification_id] || 0) * (1 + (p.custom_margin !== null ? p.custom_margin : (margins[p.category] || 5)) / 100)).toLocaleString()}
                                             </span>
                                             <span className="text-[9px] font-bold text-blue-500/50 uppercase tracking-tighter">
-                                                +{margins[p.category] || 5}% CATEGORY_MARGIN
+                                                {p.price === specBenchmarks[p.specification_id] ? "BASED ON MAX BENCHMARK" : `BENCHMARK: NT$ ${specBenchmarks[p.specification_id]?.toLocaleString()}`}
                                             </span>
                                         </div>
-                                        <Zap size={14} className="text-blue-500 fill-current ml-2" />
                                     </div>
                                 </td>
                                 <td className="px-8 py-4">
@@ -220,8 +325,19 @@ const MarketPrices = () => {
                                         {p.source}
                                     </span>
                                 </td>
-                                <td className="px-8 py-4 text-right text-[10px] font-bold text-gray-500">
-                                    {new Date(p.updated_at).toLocaleString('zh-TW')}
+                                <td className="px-8 py-4 text-right">
+                                    <div className="flex flex-col items-end gap-1">
+                                        <span className="text-[10px] font-bold text-gray-500">
+                                            {p.updated_at ? new Date(p.updated_at).toLocaleString('zh-TW') : 'N/A'}
+                                        </span>
+                                        <button 
+                                            onClick={() => handleEditClick(p)}
+                                            className="p-1.5 bg-slate-800 hover:bg-cyan-500/20 text-gray-500 hover:text-cyan-400 rounded-lg transition-all border border-transparent hover:border-cyan-500/30"
+                                            title="編輯此項"
+                                        >
+                                            <Edit3 size={14} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -237,6 +353,257 @@ const MarketPrices = () => {
                 )}
             </div>
                 </>
+            )}
+
+            {/* Manual Entry Modal */}
+            {showManualModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowManualModal(false)}></div>
+                    <div className="bg-slate-900 border border-cyan-500/30 w-full max-w-md rounded-[2.5rem] p-8 relative z-10 shadow-2xl shadow-cyan-500/10 animate-in fade-in zoom-in duration-300">
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="p-3 bg-cyan-500/10 rounded-2xl text-cyan-400">
+                                <Zap size={24} className="fill-current" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-black text-white tracking-tight">手動建立基準行情</h2>
+                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Manual_Data_Injection</p>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleManualSubmit} className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-4">類別 Category</label>
+                                <select 
+                                    className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-cyan-500/50 transition-all font-bold text-sm text-cyan-400"
+                                    value={manualForm.category}
+                                    onChange={(e) => setManualForm({...manualForm, category: e.target.value})}
+                                >
+                                    <option value="手機">手機 (Smartphone)</option>
+                                    <option value="平板">平板 (Tablet)</option>
+                                    <option value="筆電">筆電 (Laptop)</option>
+                                    <option value="手錶">手錶 (Watch)</option>
+                                    <option value="耳機">耳機 (Audio)</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-4">型號 Model_Name</label>
+                                <input 
+                                    type="text" 
+                                    required
+                                    placeholder="例如：iPhone 15 Pro"
+                                    className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-cyan-500/50 transition-all font-bold text-sm text-cyan-400 placeholder:text-gray-700"
+                                    value={manualForm.model}
+                                    onChange={(e) => setManualForm({...manualForm, model: e.target.value})}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-4">詳細規格 Specs</label>
+                                <input 
+                                    type="text" 
+                                    required
+                                    placeholder="例如：256GB"
+                                    className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-cyan-500/50 transition-all font-bold text-sm text-cyan-400 placeholder:text-gray-700"
+                                    value={manualForm.specification}
+                                    onChange={(e) => setManualForm({...manualForm, specification: e.target.value})}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-4">市場報價 Price_NT$</label>
+                                <input 
+                                    type="number" 
+                                    required
+                                    placeholder="0"
+                                    className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-cyan-500/50 transition-all font-bold text-sm text-cyan-400 placeholder:text-gray-700"
+                                    value={manualForm.price}
+                                    onChange={(e) => setManualForm({...manualForm, price: e.target.value})}
+                                />
+                            </div>
+
+                            <div className="flex gap-4 pt-4">
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowManualModal(false)}
+                                    className="flex-1 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
+                                >
+                                    取消 Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="flex-1 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                >
+                                    {submitting ? <Loader2 size={16} className="animate-spin" /> : <Zap size={14} className="fill-current" />}
+                                    確認新增 Confirm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Modal */}
+            {showEditModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowEditModal(false)}></div>
+                    <div className="bg-slate-900 border border-blue-500/30 w-full max-w-md rounded-[2.5rem] p-8 relative z-10 shadow-2xl shadow-blue-500/10 animate-in fade-in zoom-in duration-300">
+                        <div className="flex justify-between items-start mb-8">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-400">
+                                    <Edit3 size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-black text-white tracking-tight">編輯行情規格</h2>
+                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Market_Data_Adjustment</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowEditModal(false)} className="text-gray-500 hover:text-white transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="mb-6 p-4 bg-slate-950 rounded-2xl border border-white/5">
+                            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Target_Node</p>
+                            <p className="text-sm font-bold text-white">{editForm.model} <span className="text-cyan-500">{editForm.specification}</span></p>
+                        </div>
+
+                        <form onSubmit={handleEditSubmit} className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-4">自訂市場報價 Price_NT$</label>
+                                <input 
+                                    type="number" 
+                                    required
+                                    className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-blue-500/50 transition-all font-bold text-sm text-blue-400"
+                                    value={editForm.price}
+                                    onChange={(e) => setEditForm({...editForm, price: e.target.value})}
+                                />
+                                <p className="text-[8px] text-gray-600 ml-4 font-bold">* 編輯後將會建立一個「手動新增」來源的行情，與其他來源競爭最高價</p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-4">規格專屬加成 Custom_Margin (%)</label>
+                                <input 
+                                    type="number" 
+                                    step="0.1"
+                                    placeholder="留空則使用類別預設值"
+                                    className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-blue-500/50 transition-all font-bold text-sm text-blue-400 placeholder:text-gray-700"
+                                    value={editForm.custom_margin}
+                                    onChange={(e) => setEditForm({...editForm, custom_margin: e.target.value})}
+                                />
+                                <p className="text-[8px] text-gray-600 ml-4 font-bold">* 設定此項會覆蓋類別 (手機/平板/筆電) 的通用加成比例</p>
+                            </div>
+
+                            <div className="flex gap-4 pt-4">
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowEditModal(false)}
+                                    className="flex-1 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
+                                >
+                                    取消 Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="flex-1 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-slate-950 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                >
+                                    {submitting ? <Loader2 size={16} className="animate-spin" /> : <Zap size={14} className="fill-current" />}
+                                    確認更新 Update
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Category Margin Modal */}
+            {showCategoryModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowCategoryModal(false)}></div>
+                    <div className="bg-slate-900 border border-emerald-500/30 w-full max-w-md rounded-[2.5rem] p-8 relative z-10 shadow-2xl shadow-emerald-500/10">
+                        <div className="flex justify-between items-start mb-8">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400">
+                                    <TrendingUp size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-black text-white tracking-tight">類別預設加成設定</h2>
+                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Global_Category_Margins</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowCategoryModal(false)} className="text-gray-500 hover:text-white transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                            {categoryData.map(cat => (
+                                <div key={cat.id} className="p-5 bg-slate-950 rounded-[1.5rem] border border-white/5 flex justify-between items-center group hover:border-emerald-500/30 transition-all">
+                                    <div>
+                                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Category_Node</p>
+                                        <p className="text-sm font-bold text-white uppercase">{cat.name}</p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-right">
+                                            <p className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest mb-1">Current_Margin</p>
+                                            <p className="text-lg font-black text-emerald-400 cyber-text-glow">+{cat.custom_margin !== null ? cat.custom_margin : 5}%</p>
+                                        </div>
+                                        <button 
+                                            onClick={() => {
+                                                setSelectedCategory({
+                                                    id: cat.id,
+                                                    name: cat.name,
+                                                    custom_margin: cat.custom_margin !== null ? cat.custom_margin : 5
+                                                });
+                                            }}
+                                            className="p-3 bg-slate-900 rounded-xl text-gray-500 hover:text-white transition-all border border-white/5 hover:border-emerald-500/50"
+                                        >
+                                            <Edit3 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {selectedCategory && (
+                            <form onSubmit={handleCategoryMarginSubmit} className="mt-8 pt-8 border-t border-white/5 space-y-6">
+                                <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
+                                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Editing_Target</p>
+                                    <p className="text-sm font-bold text-white uppercase">{selectedCategory.name}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-4">設定加成百分比 Margin (%)</label>
+                                    <input 
+                                        type="number" 
+                                        step="0.1"
+                                        required
+                                        className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500/50 transition-all font-bold text-sm text-emerald-400"
+                                        value={selectedCategory.custom_margin}
+                                        onChange={(e) => setSelectedCategory({...selectedCategory, custom_margin: e.target.value})}
+                                    />
+                                </div>
+                                <div className="flex gap-4">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setSelectedCategory(null)}
+                                        className="flex-1 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
+                                    >
+                                        取消 Cancel
+                                    </button>
+                                    <button 
+                                        type="submit"
+                                        disabled={submitting}
+                                        className="flex-1 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        {submitting ? <Loader2 size={16} className="animate-spin" /> : <Zap size={14} className="fill-current" />}
+                                        同步更新 Sync
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+                    </div>
+                </div>
             )}
         </div>
     );

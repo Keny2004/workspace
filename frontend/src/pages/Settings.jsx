@@ -11,7 +11,7 @@ const SettingsPage = () => {
         crawler_proxy_enabled: 'false',
         crawler_stealth_level: 'high',
         ollama_url: "http://localhost:11434/api/generate",
-        ollama_model: "gemma3:1b",
+        ollama_model: "qwen3.5:4b",
         app_url: "http://localhost:3000",
         custom_proxies: "",
         crawler_stealth_level: "high"
@@ -355,6 +355,55 @@ const SettingsPage = () => {
                                     value={config.ollama_model}
                                     onChange={handleChange}
                                     className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-yellow-500/50 transition-all font-mono text-yellow-500"
+                                />
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="bg-slate-900/40 p-8 rounded-3xl border border-slate-800 backdrop-blur-md space-y-6 cyber-border">
+                        <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+                            <RefreshCcw className="text-cyan-400 cyber-text-glow" size={20} />
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">自動排程間隔 // SCHEDULER_INTERVALS</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-[9px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">商品爬蟲間隔 (m)</label>
+                                <input 
+                                    type="number" 
+                                    name="crawl_interval_mins"
+                                    value={config.crawl_interval_mins}
+                                    onChange={handleChange}
+                                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-cyan-500/50 transition-all font-mono text-cyan-400 text-xs"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[9px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">AI 預測更新 (h)</label>
+                                <input 
+                                    type="number" 
+                                    name="ai_prediction_interval_hours"
+                                    value={config.ai_prediction_interval_hours}
+                                    onChange={handleChange}
+                                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-cyan-500/50 transition-all font-mono text-cyan-400 text-xs"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[9px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">摘要掃描頻率 (m)</label>
+                                <input 
+                                    type="number" 
+                                    name="summary_sweep_interval_mins"
+                                    value={config.summary_sweep_interval_mins}
+                                    onChange={handleChange}
+                                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-cyan-500/50 transition-all font-mono text-cyan-400 text-xs"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[9px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">詳情補全頻率 (m)</label>
+                                <input 
+                                    type="number" 
+                                    name="metadata_enrichment_interval_mins"
+                                    value={config.metadata_enrichment_interval_mins}
+                                    onChange={handleChange}
+                                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-cyan-500/50 transition-all font-mono text-cyan-400 text-xs"
                                 />
                             </div>
                         </div>
