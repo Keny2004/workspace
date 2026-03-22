@@ -27,6 +27,18 @@ app.add_middleware(
 def on_startup():
     init_db()
     scheduler.start()
+    
+    # Initialize category-specific margins if not present
+    db = next(get_db())
+    for key, val in [
+        ("profit_margin_手機", "5"),
+        ("profit_margin_平板", "10"),
+        ("profit_margin_筆電", "15"),
+        ("custom_proxies", "")
+    ]:
+        if not db.query(models.SystemConfig).filter(models.SystemConfig.key == key).first():
+            db.add(models.SystemConfig(key=key, value=val))
+    db.commit()
 
 # WebSocket for system status
 class ConnectionManager:
@@ -47,7 +59,7 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 @app.websocket("/ws/status")
-async def websocket_status(websocket: WebSocket):
+async def websocket_status(websocket: WebSocket, db: Session = Depends(get_db)):
     await manager.connect(websocket)
     try:
         while True:
@@ -64,6 +76,8 @@ async def websocket_status(websocket: WebSocket):
             await asyncio.sleep(2) # Update every 2 seconds
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+    finally:
+        db.close()
 
 @app.websocket("/ws/logs")
 async def websocket_logs(websocket: WebSocket):
@@ -99,36 +113,46 @@ def get_products(is_potential: bool = False, db: Session = Depends(get_db)):
     query = db.query(models.ScrapedProduct)
     if is_potential:
         query = query.filter(models.ScrapedProduct.is_potential_profit == True)
+    
     products = query.order_by(models.ScrapedProduct.scraped_at.desc()).all()
     
     result = []
     for p in products:
-        p_dict = {
+        spec = p.specification
+        if not spec or not spec.is_monitored: continue
+        
+        # 1. Hybrid Benchmark Calculation
+        benchmarks = db.query(models.MarketPrice).filter(models.MarketPrice.specification_id == p.specification_id).all()
+        portal_price = max([b.price for b in benchmarks]) if benchmarks else 0
+        
+        # median of this spec's listings
+        listing_prices = [lp.price for lp in db.query(models.ScrapedProduct.price).filter(models.ScrapedProduct.specification_id == p.specification_id).all()]
+        listing_median = 0
+        if listing_prices:
+            s_prices = sorted(listing_prices)
+            n = len(s_prices)
+            listing_median = s_prices[n//2] if n % 2 != 0 else (s_prices[n//2-1] + s_prices[n//2])/2
+            
+        true_market_price = max(portal_price, listing_median)
+        est_profit = true_market_price - p.price if true_market_price > 0 else 0
+        profit_percent = round((est_profit / p.price) * 100, 1) if p.price > 0 else 0
+        
+        result.append({
             "id": p.id,
-            "specification_id": p.specification_id,
+            "category": spec.model.category.name if spec.model and spec.model.category else "Unknown",
+            "model": spec.model.name if spec.model else "Unknown",
+            "specification": spec.name if spec else "Unknown",
             "platform": p.platform,
-            "external_id": p.external_id,
             "title": p.title,
             "price": p.price,
+            "market_price": true_market_price,
+            "estimated_profit": est_profit,
+            "profit_margin_percent": profit_percent,
             "url": p.url,
-            "image_url": p.image_url,
-            "is_potential_profit": p.is_potential_profit,
-            "ai_summary": p.ai_summary,
             "scraped_at": p.scraped_at,
-            "estimated_profit": 0,
-            "profit_margin_percent": 0
-        }
-        
-        benchmark = db.query(models.MarketPrice).filter(
-            models.MarketPrice.specification_id == p.specification_id
-        ).order_by(models.MarketPrice.updated_at.desc()).first()
-        
-        if benchmark and p.price > 0:
-            profit = benchmark.price - p.price
-            p_dict["estimated_profit"] = profit
-            p_dict["profit_margin_percent"] = round((profit / p.price) * 100, 1)
-            
-        result.append(p_dict)
+            "ai_summary": p.ai_summary,
+            "is_potential_profit": p.is_potential_profit
+        })
     return result
 
 @app.get("/api/market-prices")
@@ -160,9 +184,12 @@ def update_config(config_data: dict, db: Session = Depends(get_db)):
     return {"status": "success"}
 @app.post("/api/crawl")
 def trigger_crawl():
+    if scheduler.is_crawling:
+        return {"status": "error", "message": "Crawler is already running."}
     if scheduler.is_paused:
         return {"status": "error", "message": "Crawler is paused. Resume it first."}
-    asyncio.create_task(asyncio.to_thread(scheduler.crawl_products))
+    import threading
+    threading.Thread(target=scheduler.crawl_products).start()
     return {"status": "started"}
 
 @app.post("/api/crawl/pause")
@@ -265,26 +292,127 @@ async def test_telegram(data: dict):
 
 @app.get("/api/market-prices/all")
 def get_all_market_prices(db: Session = Depends(get_db)):
-    prices = db.query(models.MarketPrice).all()
-    # Join with spec/model for display
-    result = []
+    # Fetch all with joins to get names for robust deduplication
+    prices = db.query(models.MarketPrice).order_by(models.MarketPrice.updated_at.desc()).all()
+    
+    seen = set()
+    latest_prices = []
+    
     for p in prices:
         spec = db.query(models.Specification).filter(models.Specification.id == p.specification_id).first()
-        if spec:
-            result.append({
+        if not spec: continue
+        
+        # Key by names to catch logical duplicates even if IDs differ
+        key = (spec.model.name.strip(), spec.name.strip(), (p.source or "Unknown").strip())
+        
+        if key not in seen:
+            seen.add(key)
+            latest_prices.append({
                 "id": p.id,
+                "specification_id": p.specification_id,
                 "category": spec.model.category.name,
                 "model": spec.model.name,
                 "specification": spec.name,
                 "price": p.price,
                 "source": p.source or "Unknown",
-                "updated_at": p.updated_at
+                "updated_at": p.updated_at,
+                "is_monitored": spec.is_monitored
             })
-    return result
+            
+    return latest_prices
+
+@app.post("/api/specifications/{spec_id}/toggle-monitor")
+def toggle_monitor(spec_id: int, db: Session = Depends(get_db)):
+    spec = db.query(models.Specification).filter(models.Specification.id == spec_id).first()
+    if not spec:
+        return {"status": "error", "message": "Specification not found"}
+    
+    spec.is_monitored = not spec.is_monitored
+    db.commit()
+    return {"status": "success", "is_monitored": spec.is_monitored}
 
 class ImportURLRequest(BaseModel):
     url: str
     category_id: int
+
+@app.post("/api/admin/db-cleanup")
+def cleanup_database(db: Session = Depends(get_db)):
+    """
+    Intensive cleanup: 
+    1. Merge ProductModels with same name (per category).
+    2. Merge Specifications with same name (per model).
+    3. Remove duplicate MarketPrices (per spec/source, keep newest).
+    4. Remove duplicate ScrapedProducts (per ext_id/platform, keep newest).
+    """
+    stats = {"models_merged": 0, "specs_merged": 0, "prices_cleaned": 0, "products_cleaned": 0}
+    
+    # 1. Merge ProductModels
+    categories = db.query(models.Category).all()
+    for cat in categories:
+        model_groups = {} # name -> list of models
+        for m in cat.models:
+            name = m.name.strip().lower()
+            if name not in model_groups: model_groups[name] = []
+            model_groups[name].append(m)
+        
+        for name, m_list in model_groups.items():
+            if len(m_list) > 1:
+                survivor = m_list[0]
+                others = m_list[1:]
+                for other in others:
+                    # Move all specs to survivor
+                    for spec in other.specifications:
+                        spec.model_id = survivor.id
+                    db.delete(other)
+                    stats["models_merged"] += 1
+    db.commit()
+
+    # 2. Merge Specifications
+    all_models = db.query(models.ProductModel).all()
+    for m in all_models:
+        spec_groups = {} # name -> list of specs
+        for s in m.specifications:
+            name = s.name.strip().lower()
+            if name not in spec_groups: spec_groups[name] = []
+            spec_groups[name].append(s)
+            
+        for name, s_list in spec_groups.items():
+            if len(s_list) > 1:
+                survivor = s_list[0]
+                others = s_list[1:]
+                for other in others:
+                    # Move all prices and products to survivor
+                    db.query(models.MarketPrice).filter(models.MarketPrice.specification_id == other.id).update({"specification_id": survivor.id})
+                    db.query(models.ScrapedProduct).filter(models.ScrapedProduct.specification_id == other.id).update({"specification_id": survivor.id})
+                    db.delete(other)
+                    stats["specs_merged"] += 1
+    db.commit()
+
+    # 3. Deduplicate MarketPrices (spec_id, source)
+    all_prices = db.query(models.MarketPrice).order_by(models.MarketPrice.updated_at.desc()).all()
+    seen_prices = set()
+    for p in all_prices:
+        key = (p.specification_id, (p.source or "Unknown").strip())
+        if key in seen_prices:
+            db.delete(p)
+            stats["prices_cleaned"] += 1
+        else:
+            seen_prices.add(key)
+    db.commit()
+
+    # 4. Deduplicate ScrapedProducts (external_id, platform)
+    all_prods = db.query(models.ScrapedProduct).order_by(models.ScrapedProduct.scraped_at.desc()).all()
+    seen_prods = set()
+    for p in all_prods:
+        key = (p.external_id, p.platform)
+        if key in seen_prods:
+            db.delete(p)
+            stats["products_cleaned"] += 1
+        else:
+            seen_prods.add(key)
+    db.commit()
+
+    return {"status": "success", "stats": stats}
 
 @app.post("/api/market-prices/import-url")
 def import_valuation_url(req: ImportURLRequest, db: Session = Depends(get_db)):

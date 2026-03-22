@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Save, Bell, DollarSign, Cpu, Trash2, Plus, Monitor, CheckCircle, Smartphone, Laptop, Tablet, Info, Send, X, AlertCircle, Globe } from 'lucide-react';
+import { Save, AlertCircle, CheckCircle, RefreshCcw, Bell, Shield, Database, Trash2, Plus, X, Globe, Lock, Monitor, Smartphone, Laptop, Send, DollarSign, Cpu } from 'lucide-react';
 
 const SettingsPage = () => {
     const [config, setConfig] = useState({
@@ -8,9 +8,13 @@ const SettingsPage = () => {
         telegram_token: "",
         telegram_user_id: "",
         telegram_profit_threshold: "1000",
+        crawler_proxy_enabled: 'false',
+        crawler_stealth_level: 'high',
         ollama_url: "http://localhost:11434/api/generate",
         ollama_model: "gemma3:1b",
-        app_url: "http://localhost:3000"
+        app_url: "http://localhost:3000",
+        custom_proxies: "",
+        crawler_stealth_level: "high"
     });
     const [categories, setCategories] = useState([]);
     const [newCategory, setNewCategory] = useState("");
@@ -148,50 +152,56 @@ const SettingsPage = () => {
     };
 
     return (
-        <div className="p-8 w-full mx-auto space-y-10 relative">
+        <div className="p-8 w-full mx-auto space-y-10 relative min-h-screen cyber-grid overflow-x-hidden transition-all duration-700">
+            <div className="scanline"></div>
+
             {/* Custom Toast */}
             {notification && (
-                <div className="fixed top-24 right-10 z-50 animate-in slide-in-from-right duration-500">
-                    <div className={`${notification.type === 'error' ? 'bg-red-600' : 'bg-emerald-600'} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-bold border border-white/20`}>
-                        {notification.type === 'error' ? <AlertCircle size={20}/> : <CheckCircle size={20}/>}
-                        {notification.msg}
+                <div className="fixed top-24 right-10 z-[100] animate-in slide-in-from-right duration-500">
+                    <div className={`${notification.type === 'error' ? 'bg-red-900/90' : 'bg-cyan-900/90'} text-white px-8 py-5 rounded-3xl shadow-2xl flex items-center gap-4 font-black border border-white/20 backdrop-blur-2xl cyber-border`}>
+                        {notification.type === 'error' ? <AlertCircle size={22} className="text-red-400" /> : <CheckCircle size={22} className="text-cyan-400" />}
+                        <span className="uppercase tracking-widest text-[10px]">{notification.msg}</span>
                     </div>
                 </div>
             )}
 
             {/* Custom Modal */}
             {modal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-slate-800 border border-slate-700 p-8 rounded-3xl shadow-2xl w-full max-w-md space-y-6">
-                        <h3 className="text-xl font-bold">{modal.title}</h3>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 backdrop-blur-xl animate-in fade-in duration-300">
+                    <div className="bg-slate-900 border border-cyan-500/20 p-10 rounded-[2.5rem] shadow-[0_0_50px_rgba(0,243,255,0.1)] w-full max-w-lg space-y-8 relative overflow-hidden cyber-border">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
+                        <h3 className="text-2xl font-black tracking-tighter text-white uppercase italic">{modal.title}</h3>
                         {modal.type !== 'confirm' ? (
-                            <input 
-                                autoFocus
-                                type="text" 
-                                placeholder="請輸入名稱..."
-                                value={modalInputValue}
-                                onChange={(e) => setModalInputValue(e.target.value)}
-                                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500/50"
-                                onKeyDown={(e) => e.key === 'Enter' && handleModalSubmit(modalInputValue)}
-                            />
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-magenta-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                                <input 
+                                    autoFocus
+                                    type="text" 
+                                    placeholder="INPUT_ENTITY_IDENTITY..."
+                                    value={modalInputValue}
+                                    onChange={(e) => setModalInputValue(e.target.value)}
+                                    className="relative w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-cyan-500/50 transition-all font-mono text-cyan-400"
+                                    onKeyDown={(e) => e.key === 'Enter' && handleModalSubmit(modalInputValue)}
+                                />
+                            </div>
                         ) : (
-                            <p className="text-gray-400 text-sm">此操作無法復原，請謹慎執行。</p>
+                            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest leading-relaxed">執行此操作將導致數據結構永久變更。確認執行 Neural_Wipe 指令？</p>
                         )}
-                        <div className="flex justify-end gap-4">
-                            <button onClick={() => setModal(null)} className="px-6 py-2 text-gray-400 font-bold hover:text-white transition">取消</button>
+                        <div className="flex justify-end gap-6 pt-4">
+                            <button onClick={() => setModal(null)} className="px-8 py-3 text-gray-500 font-black text-[10px] uppercase tracking-widest hover:text-white transition-colors">Abort</button>
                             {modal.type === 'confirm' ? (
                                 <button 
                                     onClick={modal.clearAll ? executeClear : confirmDelete} 
-                                    className="px-6 py-2 bg-red-600 hover:bg-red-500 rounded-xl font-bold transition"
+                                    className="px-8 py-3 bg-red-600 hover:bg-red-500 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-red-600/30 text-white cyber-button"
                                 >
-                                    確認刪除
+                                    Confirm_Wipe
                                 </button>
                             ) : (
                                 <button 
                                     onClick={() => handleModalSubmit(modalInputValue)} 
-                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold transition"
+                                    className="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-cyan-600/30 text-white cyber-button"
                                 >
-                                    確認新增
+                                    Confirm_Inject
                                 </button>
                             )}
                         </div>
@@ -199,157 +209,223 @@ const SettingsPage = () => {
                 </div>
             )}
 
-            <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+            <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 relative z-10">
                 <div>
-                    <h1 className="text-4xl font-black tracking-tight mb-2">系統設定</h1>
-                    <p className="text-gray-400 font-medium">系統核心參數與追蹤目標配置中心</p>
+                    <h1 className="text-5xl font-black tracking-tighter bg-gradient-to-r from-white via-cyan-400 to-magenta-500 bg-clip-text text-transparent cyber-text-glow">系統設定</h1>
+                    <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2 opacity-70">Core Configuration // Root Access</p>
                 </div>
                 <div className="flex gap-4">
                     <button 
                         onClick={clearData}
-                        className="px-6 py-2 bg-red-600/10 text-red-400 border border-red-500/20 hover:bg-red-600/20 rounded-xl font-bold transition text-sm"
+                        className="px-6 py-3 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 rounded-2xl font-black text-[10px] uppercase tracking-widest transition active:scale-95 cyber-button"
                     >
                         清空舊資料
                     </button>
                     <button 
                         onClick={handleSave}
                         disabled={saving}
-                        className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold transition disabled:opacity-50 text-sm shadow-xl shadow-blue-500/20"
+                        className="flex items-center gap-3 px-10 py-3 bg-cyan-600 hover:bg-cyan-500 rounded-2xl font-black transition disabled:opacity-50 text-[11px] uppercase tracking-[0.2em] shadow-2xl shadow-cyan-600/30 text-white cyber-button"
                     >
-                        <Save size={18} />
-                        {saving ? "處理中..." : "儲存變更"}
+                        <Save size={16} />
+                        {saving ? "SAVING..." : "COMMIT_CHANGES"}
                     </button>
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
                 {/* Column 1: Config Groups */}
                 <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <section className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50 backdrop-blur-sm space-y-6">
-                        <div className="flex items-center gap-3 border-b border-slate-700 pb-4">
-                            <DollarSign className="text-blue-400" size={20} />
-                            <h3 className="font-bold">金流與門檻</h3>
+                    <section className="bg-slate-900/40 p-8 rounded-3xl border border-slate-800 backdrop-blur-md space-y-6 cyber-border">
+                        <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+                            <DollarSign className="text-cyan-400 cyber-text-glow" size={20} />
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">獲利門檻設定 // ARBITRAGE_LEVELS</h3>
                         </div>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">獲利判定趴數 (%)</label>
-                                <input 
-                                    type="number" 
-                                    name="profit_margin"
-                                    value={config.profit_margin}
-                                    onChange={handleChange}
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/50 transition"
-                                />
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">
+                                        <Smartphone size={12} className="text-cyan-400" /> 手機獲利判定 (%)
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        name="profit_margin_手機"
+                                        value={config.profit_margin_手機}
+                                        onChange={handleChange}
+                                        className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-cyan-500/50 transition-all font-mono text-cyan-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">
+                                        <Smartphone size={12} className="text-magenta-400 rotate-90" /> 平板獲利判定 (%)
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        name="profit_margin_平板"
+                                        value={config.profit_margin_平板}
+                                        onChange={handleChange}
+                                        className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-cyan-500/50 transition-all font-mono text-cyan-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">
+                                        <Laptop size={12} className="text-yellow-400" /> 筆電獲利判定 (%)
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        name="profit_margin_筆電"
+                                        value={config.profit_margin_筆電}
+                                        onChange={handleChange}
+                                        className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-cyan-500/50 transition-all font-mono text-cyan-400"
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Telegram 推播門檻 ($)</label>
+                            <div className="pt-2 border-t border-white/5">
+                                <label className="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">Telegram 推播門檻 ($)</label>
                                 <input 
                                     type="number" 
                                     name="telegram_profit_threshold"
                                     value={config.telegram_profit_threshold}
                                     onChange={handleChange}
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/50 transition"
+                                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-cyan-500/50 transition-all font-mono text-[11px] text-gray-400"
                                 />
                             </div>
                         </div>
                     </section>
 
-                    <section className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50 backdrop-blur-sm space-y-6">
-                        <div className="flex items-center justify-between border-b border-slate-700 pb-4">
+                    <section className="bg-slate-900/40 p-8 rounded-3xl border border-slate-800 backdrop-blur-md space-y-6 cyber-border">
+                        <div className="flex items-center justify-between border-b border-white/5 pb-4">
                             <div className="flex items-center gap-3">
-                                <Bell className="text-purple-400" size={20} />
-                                <h3 className="font-bold">Telegram 權限</h3>
+                                <Bell className="text-magenta-400 cyber-text-glow" size={20} />
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-magenta-400">TELEGRAM AUTH</h3>
                             </div>
                             <button 
                                 onClick={testTelegram}
                                 disabled={testing}
-                                className="flex items-center gap-1 px-3 py-1 bg-purple-600/20 text-purple-400 border border-purple-500/30 rounded-lg text-[10px] font-black hover:bg-purple-600 hover:text-white transition disabled:opacity-50"
+                                className="flex items-center gap-2 px-3 py-1 bg-magenta-500/10 text-magenta-400 border border-magenta-500/30 rounded-lg text-[9px] font-black hover:bg-magenta-500 hover:text-white transition active:scale-95"
                             >
                                 <Send size={10} />
-                                {testing ? 'TESTING' : 'TEST NOW'}
+                                {testing ? 'PINGING...' : 'TEST_STRAT'}
                             </button>
                         </div>
-                        <div className="space-y-4">
+                        <div className="space-y-5">
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Bot Token</label>
+                                <label className="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">Bot Token</label>
                                 <input 
                                     type="password" 
                                     name="telegram_token"
                                     value={config.telegram_token}
                                     onChange={handleChange}
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-purple-500/50 transition"
+                                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-magenta-500/50 transition-all font-mono text-magenta-400"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Receiver User ID</label>
+                                <label className="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">Receiver User ID</label>
                                 <input 
                                     type="text" 
                                     name="telegram_user_id"
                                     value={config.telegram_user_id}
                                     onChange={handleChange}
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-purple-500/50 transition"
+                                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-magenta-500/50 transition-all font-mono text-magenta-400"
                                 />
                             </div>
                         </div>
                     </section>
 
-                    <section className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50 backdrop-blur-sm space-y-6">
-                        <div className="flex items-center gap-3 border-b border-slate-700 pb-4">
-                            <Cpu className="text-yellow-400" size={20} />
-                            <h3 className="font-bold">Ollama 推論</h3>
+                    <section className="bg-slate-900/40 p-8 rounded-3xl border border-slate-800 backdrop-blur-md space-y-6 cyber-border">
+                        <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+                            <Cpu className="text-yellow-400 cyber-text-glow" size={20} />
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-400">Ollama Neuro-Link</h3>
                         </div>
-                        <div className="space-y-4">
+                        <div className="space-y-5">
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Ollama Endpoint</label>
+                                <label className="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">Ollama Endpoint</label>
                                 <input 
                                     type="text" 
                                     name="ollama_url"
                                     value={config.ollama_url}
                                     onChange={handleChange}
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-yellow-500/50 transition"
+                                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-yellow-500/50 transition-all font-mono text-yellow-500"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Model Name</label>
+                                <label className="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">Model Identity</label>
                                 <input 
                                     type="text" 
                                     name="ollama_model"
                                     value={config.ollama_model}
                                     onChange={handleChange}
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-yellow-500/50 transition"
+                                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-yellow-500/50 transition-all font-mono text-yellow-500"
                                 />
                             </div>
                         </div>
                     </section>
-
-                    <section className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50 backdrop-blur-sm space-y-6">
-                        <div className="flex items-center gap-3 border-b border-slate-700 pb-4">
-                            <Globe className="text-emerald-400" size={20} />
-                            <h3 className="font-bold">外部行情自動匯入</h3>
+                    <section className="bg-slate-900/40 p-8 rounded-3xl border border-slate-800 backdrop-blur-md space-y-6 cyber-border">
+                        <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+                            <Shield className="text-orange-400 cyber-text-glow" size={20} />
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">進階防封禁設定 // STEALTH_OPS</h3>
                         </div>
-                        <div className="space-y-4">
+                        <div className="space-y-5">
                             <div>
+                                <label className="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">隱身強度 (STEALTH_LEVEL)</label>
                                 <select 
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500/50 mb-3 text-sm text-gray-300"
+                                    name="crawler_stealth_level"
+                                    value={config.crawler_stealth_level}
+                                    onChange={handleChange}
+                                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-orange-500/50 text-[11px] font-black uppercase text-orange-400/80 appearance-none"
+                                >
+                                    <option value="high">HIGH (30-90s Jitter)</option>
+                                    <option value="balanced">BALANCED (5-15s Jitter)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest px-1">自定義代理列表 (One per line)</label>
+                                <textarea 
+                                    name="custom_proxies"
+                                    value={config.custom_proxies}
+                                    onChange={handleChange}
+                                    placeholder="127.0.0.1:8080&#10;user:pass@proxy.com:3128"
+                                    rows={4}
+                                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-orange-500/50 transition-all font-mono text-orange-400 text-[10px] leading-relaxed resize-none"
+                                />
+                                <p className="text-[9px] text-gray-600 mt-2 italic">* 系統將優先使用您的自定義地址，失效時自動切換備份池。</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="bg-slate-950/60 p-8 rounded-3xl border border-emerald-500/20 space-y-6 cyber-border col-span-1 md:col-span-3">
+                        <div className="flex items-center gap-3 border-b border-emerald-500/20 pb-4">
+                            <Globe className="text-emerald-400 cyber-text-glow" size={20} />
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">行情同步擴充 // URL_INJECTOR</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+                            <div className="md:col-span-3">
+                                <label className="block text-[10px] font-black text-gray-600 uppercase mb-2 tracking-widest px-1">Target Category</label>
+                                <select 
+                                    className="w-full bg-slate-950 border border-emerald-500/20 rounded-xl px-4 py-3 outline-none focus:border-emerald-500/50 text-[11px] font-black uppercase tracking-widest text-emerald-500/70 appearance-none shadow-inner"
                                     value={importCategory}
                                     onChange={e => setImportCategory(e.target.value)}
                                 >
-                                    <option value="">選擇目標擴充分類...</option>
+                                    <option value="">-- SELECT_CATEGORY --</option>
                                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                 </select>
+                            </div>
+                            <div className="md:col-span-6">
+                                <label className="block text-[10px] font-black text-gray-600 uppercase mb-2 tracking-widest px-1">Remote Data URL</label>
                                 <input 
                                     type="text" 
-                                    placeholder="貼上收購價網址..."
+                                    placeholder="https://source.platform.com/prices..."
                                     value={importUrl}
                                     onChange={e => setImportUrl(e.target.value)}
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500/50 transition mb-3 text-sm"
+                                    className="w-full bg-slate-950 border border-emerald-500/20 rounded-xl px-4 py-3 outline-none focus:border-emerald-500/50 transition font-mono text-xs text-emerald-400 placeholder:text-emerald-900"
                                 />
+                            </div>
+                            <div className="md:col-span-3">
                                 <button 
                                     onClick={handleImportUrl}
                                     disabled={importing || !importUrl || !importCategory}
-                                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:bg-slate-700 rounded-xl font-bold transition shadow-lg shadow-emerald-500/20 text-sm"
+                                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-20 rounded-xl font-black text-[11px] uppercase tracking-widest transition shadow-2xl shadow-emerald-600/20 text-white cyber-button"
                                 >
-                                    {importing ? "匯入分析中..." : "開始擴充資料庫"}
+                                    {importing ? "SYCHRONIZING..." : "START_IMPORT"}
                                 </button>
                             </div>
                         </div>
@@ -358,59 +434,65 @@ const SettingsPage = () => {
 
                 {/* Column 2: Hierarchy Management */}
                 <div className="lg:col-span-12">
-                    <section className="bg-slate-800/50 p-8 rounded-3xl border border-slate-700/50 shadow-2xl">
-                        <div className="flex justify-between items-center mb-10 border-b border-slate-700 pb-6">
-                             <div className="flex items-center gap-3">
-                                <Monitor className="text-emerald-400" size={24} />
-                                <h3 className="text-xl font-black italic tracking-tighter">MONITOR HIERARCHY</h3>
+                    <section className="bg-slate-900/40 p-10 rounded-[2.5rem] border border-slate-800 shadow-2xl relative overflow-hidden cyber-border">
+                        <div className="flex justify-between items-center mb-12 border-b border-white/5 pb-8 relative z-10">
+                             <div className="flex items-center gap-4">
+                                <div className="p-3 bg-cyan-500/10 rounded-2xl border border-cyan-500/20">
+                                    <Monitor className="text-cyan-400 cyber-text-glow" size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black italic tracking-tighter text-white uppercase px-1">MONITOR_HIERARCHY</h3>
+                                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mt-1">Target Node Definition // Tree_V2.0</p>
+                                </div>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-4">
                                 <input 
                                     type="text" 
-                                    placeholder="新增類別名稱..."
+                                    placeholder="NEW_CAT_IDENTITY..."
                                     value={newCategory}
                                     onChange={(e) => setNewCategory(e.target.value)}
-                                    className="bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500/50 transition w-64"
+                                    className="bg-slate-950 border border-white/10 rounded-2xl px-6 py-3 text-xs outline-none focus:border-cyan-500/50 transition w-72 font-mono text-cyan-400"
                                 />
-                                <button onClick={addCategory} className="p-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl transition text-white shadow-lg shadow-emerald-500/20"><Plus size={20}/></button>
+                                <button onClick={addCategory} className="p-3 bg-cyan-600 hover:bg-cyan-500 rounded-2xl transition text-white shadow-xl shadow-cyan-600/30 cyber-button active:scale-90"><Plus size={22}/></button>
                             </div>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 relative z-10">
                             {categories.map(cat => (
-                                <div key={cat.id} className="bg-slate-900/30 rounded-3xl border border-slate-700/50 flex flex-col hover:border-slate-500 transition duration-500 group/cat overflow-hidden">
-                                    <div className="bg-slate-800/50 px-6 py-5 flex justify-between items-center border-b border-slate-700/50 group-hover/cat:bg-slate-700/50 transition">
-                                        <span className="font-bold text-gray-200 tracking-wide flex items-center gap-2">
-                                            {cat.name === "手機" ? <Smartphone size={16} className="text-blue-400"/> : (cat.name === "筆電" ? <Laptop size={16} className="text-purple-400"/> : <Monitor size={16} className="text-emerald-400"/>)}
+                                <div key={cat.id} className="bg-slate-950/50 rounded-[2rem] border border-white/5 flex flex-col hover:border-cyan-500/30 transition-all duration-700 group/cat overflow-hidden shadow-inner">
+                                    <div className="bg-slate-900/80 px-8 py-6 flex justify-between items-center border-b border-white/5 group-hover/cat:bg-slate-800/80 transition duration-500">
+                                        <span className="font-black text-gray-200 text-xs uppercase tracking-[0.2em] flex items-center gap-3">
+                                            {cat.name === "手機" ? <Smartphone size={16} className="text-cyan-400 cyber-text-glow"/> : (cat.name === "筆電" ? <Laptop size={16} className="text-magenta-400 cyber-text-glow"/> : <Monitor size={16} className="text-yellow-400 cyber-text-glow"/>)}
                                             {cat.name}
                                         </span>
-                                        <div className="flex gap-4">
-                                            <button onClick={() => setModal({ type: 'model', parentId: cat.id, title: `新增「${cat.name}」下的型號` })} className="text-emerald-400 hover:scale-125 transition"><Plus size={20}/></button>
-                                            <button onClick={() => deleteItem('categories', cat.id, cat.name)} className="text-gray-600 hover:text-red-400 transition"><Trash2 size={18}/></button>
+                                        <div className="flex gap-5">
+                                            <button onClick={() => setModal({ type: 'model', parentId: cat.id, title: `新增「${cat.name}」下的型號` })} className="text-cyan-400 hover:scale-125 transition-all cyber-text-glow"><Plus size={22}/></button>
+                                            <button onClick={() => deleteItem('categories', cat.id, cat.name)} className="text-gray-700 hover:text-red-500 transition-colors"><Trash2 size={18}/></button>
                                         </div>
                                     </div>
-                                    <div className="p-6 flex-1 min-h-[200px] space-y-8 bg-slate-900/20">
+                                    <div className="p-8 flex-1 min-h-[300px] space-y-10 bg-gradient-to-b from-transparent to-slate-950/30">
                                         {cat.models?.length > 0 ? cat.models?.map(model => (
-                                            <div key={model.id} className="pl-4 border-l-2 border-blue-500/20 group/model">
-                                                <div className="flex justify-between items-center mb-4">
-                                                    <span className="text-sm font-black text-gray-300 tracking-tight">{model.name}</span>
-                                                    <div className="flex gap-3 opacity-0 group-hover/model:opacity-100 transition">
-                                                        <button onClick={() => setModal({ type: 'spec', parentId: model.id, title: `新增「${model.name}」的規格` })} className="text-blue-400 font-black text-[10px] uppercase tracking-tighter hover:text-blue-300">Add Spec</button>
-                                                        <button onClick={() => deleteItem('models', model.id, model.name)} className="text-gray-700 hover:text-red-400 transition"><Trash2 size={14}/></button>
+                                            <div key={model.id} className="pl-6 border-l-2 border-cyan-500/10 hover:border-cyan-500/40 transition-colors group/model">
+                                                <div className="flex justify-between items-center mb-5">
+                                                    <span className="text-[11px] font-black text-gray-400 tracking-widest uppercase">{model.name}</span>
+                                                    <div className="flex gap-4 opacity-0 group-hover/model:opacity-100 transition duration-500">
+                                                        <button onClick={() => setModal({ type: 'spec', parentId: model.id, title: `新增「${model.name}」的規格` })} className="text-cyan-500 font-black text-[9px] uppercase tracking-widest hover:text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">Add_Spec</button>
+                                                        <button onClick={() => deleteItem('models', model.id, model.name)} className="text-gray-700 hover:text-red-500 transition-colors"><Trash2 size={14}/></button>
                                                     </div>
                                                 </div>
-                                                <div className="flex flex-wrap gap-2">
+                                                <div className="flex flex-wrap gap-3">
                                                     {model.specifications?.map(spec => (
-                                                        <div key={spec.id} className="flex items-center gap-2.5 bg-slate-800 border border-slate-700/50 px-3 py-1.5 rounded-xl text-[10px] font-black text-gray-500 hover:text-gray-200 transition group/spec">
-                                                            <span>{spec.name}</span>
-                                                            <button onClick={() => deleteItem('specifications', spec.id, spec.name)} className="text-gray-700 hover:text-red-500 border-l border-slate-700 pl-2 ml-1"><X size={10}/></button>
+                                                        <div key={spec.id} className="flex items-center gap-3 bg-slate-900 border border-white/5 px-4 py-2 rounded-xl text-[9px] font-black text-gray-600 hover:text-cyan-400 hover:border-cyan-500/30 transition-all group/spec cursor-default shadow-sm hover:shadow-cyan-500/5">
+                                                            <span className="uppercase tracking-widest">{spec.name}</span>
+                                                            <button onClick={() => deleteItem('specifications', spec.id, spec.name)} className="text-gray-800 hover:text-red-500 border-l border-white/10 pl-3 ml-1 transition-colors"><X size={12}/></button>
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
                                         )) : (
-                                            <div className="h-full flex items-center justify-center text-gray-700 font-bold italic text-xs uppercase opacity-20">
-                                                Empty Category
+                                            <div className="h-full flex flex-col items-center justify-center text-gray-800 font-black italic text-[10px] uppercase opacity-20 tracking-[0.5em] gap-4">
+                                                <Database size={40} />
+                                                <span>Node_Empty</span>
                                             </div>
                                         )}
                                     </div>

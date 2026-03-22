@@ -3,9 +3,18 @@
 > vite
 
 
-  VITE v5.4.21  ready in 118 ms
+  VITE v5.4.21  ready in 128 ms
 
   ➜  Local:   http://localhost:3000/
-  ➜  Network: use --host to expose
-下午3:30:49 [vite] hmr update /src/pages/SystemStatus.jsx, /src/index.css
-下午3:31:06 [vite] hmr update /src/pages/Dashboard.jsx, /src/index.css
+  ➜  Network: http://192.168.0.116:3000/
+  ➜  Network: http://100.118.174.42:3000/
+下午6:09:20 [vite] warning: Duplicate key "crawler_stealth_level" in object literal
+34 |      app_url: "http://localhost:3000",
+35 |      custom_proxies: "",
+36 |      crawler_stealth_level: "high"
+   |      ^
+37 |    });
+38 |    const [categories, setCategories] = useState([]);
+
+  Plugin: vite:esbuild
+  File: /Users/huangyuxuan/Documents/git/auto/workspace/frontend/src/pages/Settings.jsx

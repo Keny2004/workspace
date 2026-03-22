@@ -37,111 +37,115 @@ const DataExplorer = () => {
     };
 
     return (
-        <div className="p-8 w-full space-y-8">
-            <header className="flex justify-between items-center">
+        <div className="p-8 w-full space-y-8 relative cyber-grid min-h-screen">
+            <div className="scanline"></div>
+            
+            <header className="flex justify-between items-center relative z-10">
                 <div>
-                    <h1 className="text-3xl font-bold">數據總覽</h1>
-                    <p className="text-gray-400">管理並篩選所有已爬取的商品數據</p>
+                    <h1 className="text-4xl font-black tracking-tighter bg-gradient-to-r from-white via-cyan-400 to-magenta-500 bg-clip-text text-transparent cyber-text-glow uppercase italic">數據總覽</h1>
+                    <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] mt-2 opacity-70">Neural Archive // Big_Data_Explorer</p>
                 </div>
                 <button 
                   onClick={exportCSV}
-                  className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-bold transition"
+                  className="flex items-center gap-3 px-8 py-3 bg-cyan-600 hover:bg-cyan-500 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-xl shadow-cyan-600/30 text-white cyber-button active:scale-95"
                 >
-                    <Download size={18} />
-                    匯出 CSV
+                    <Download size={16} />
+                    EXPORT_CSV
                 </button>
             </header>
 
             {/* Filters */}
-            <div className="flex flex-wrap gap-4 items-center bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+            <div className="flex flex-wrap gap-6 items-center bg-slate-900/40 p-8 rounded-[2.5rem] border border-slate-800 backdrop-blur-md relative z-10 cyber-border">
+                <div className="flex-1 relative group">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-cyan-500/50 group-focus-within:text-cyan-400 transition-colors" size={18} />
                     <input 
                         type="text" 
-                        placeholder="搜尋商品標題..."
-                        className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-12 pr-4 py-3 outline-none focus:border-blue-500"
+                        placeholder="SEARCH_ENTITY_TITLE..."
+                        className="w-full bg-slate-950 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-cyan-500/50 transition-all font-mono text-cyan-400 text-xs"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <select 
-                  className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500"
+                  className="bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-cyan-500/50 transition-all font-black text-[10px] uppercase tracking-widest text-cyan-500/70 appearance-none shadow-inner min-w-[150px]"
                   value={filterPlatform}
                   onChange={(e) => setFilterPlatform(e.target.value)}
                 >
-                    <option value="All">所有平台</option>
-                    <option value="Carousell">Carousell</option>
+                    <option value="All">-- ALL_NODES --</option>
+                    <option value="Carousell">CAROUSELL</option>
                 </select>
-                <div className="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus-within:border-blue-500 hover:border-slate-500 transition">
-                    <span className="text-gray-400 text-sm font-bold">最低利潤率:</span>
+                <div className="flex items-center gap-3 bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 focus-within:border-cyan-500/50 transition-all group">
+                    <span className="text-gray-600 text-[10px] font-black uppercase tracking-widest px-1">MIN_PROFIT_ROI:</span>
                     <input 
                         type="number" 
-                        className="w-16 bg-transparent outline-none text-right font-bold text-white focus:text-blue-400"
+                        className="w-16 bg-transparent outline-none text-right font-mono font-black text-cyan-400 text-sm"
                         value={minProfit}
                         onChange={(e) => setMinProfit(Number(e.target.value))}
                     />
-                    <span className="text-gray-400 font-bold">%</span>
+                    <span className="text-cyan-500/30 font-black font-mono text-xs">%</span>
                 </div>
-                <button className="p-3 bg-slate-900 border border-slate-700 rounded-xl hover:border-gray-500 transition">
+                <button className="p-4 bg-slate-950 border border-white/10 rounded-2xl hover:border-cyan-500/50 hover:text-cyan-400 transition-all duration-500">
                     <Filter size={18} />
                 </button>
             </div>
 
             {/* Table */}
-            <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-slate-900/50 border-b border-slate-700">
-                            <th className="px-6 py-4 text-sm font-bold text-gray-400">平台</th>
-                            <th className="px-6 py-4 text-sm font-bold text-gray-400">商品標題</th>
-                            <th className="px-6 py-4 text-sm font-bold text-gray-400">標價 NT$</th>
-                            <th className="px-6 py-4 text-sm font-bold text-gray-400">預估利潤</th>
-                            <th className="px-6 py-4 text-sm font-bold text-gray-400">利潤率</th>
-                            <th className="px-6 py-4 text-sm font-bold text-gray-400">獲利推薦</th>
-                            <th className="px-6 py-4 text-sm font-bold text-gray-400 text-right">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-700/50">
-                        {filteredProducts.map(p => (
-                            <tr key={p.id} className="hover:bg-slate-700/30 transition">
-                                <td className="px-6 py-4">
-                                    <span className="px-2 py-1 bg-blue-600/10 text-blue-400 text-[10px] font-bold rounded uppercase">
-                                        {p.platform}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 font-medium max-w-md truncate">{p.title}</td>
-                                <td className="px-6 py-4 font-black">NT$ {p.price.toLocaleString()}</td>
-                                <td className="px-6 py-4 font-black text-emerald-400">{p.estimated_profit > 0 ? `+ NT$ ${p.estimated_profit.toLocaleString()}` : '-'}</td>
-                                <td className="px-6 py-4 font-bold text-blue-400">{p.profit_margin_percent > 0 ? `${p.profit_margin_percent}%` : '-'}</td>
-                                <td className="px-6 py-4">
-                                    {p.is_potential_profit ? (
-                                        <span className="flex items-center gap-1 text-emerald-400 text-sm font-bold">
-                                            <ArrowUpDown size={14} /> 是
-                                        </span>
-                                    ) : (
-                                        <span className="text-gray-500 text-sm">否</span>
-                                    )}
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <a 
-                                      href={p.url} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-2 text-blue-400 hover:underline text-sm font-bold"
-                                    >
-                                        開啟
-                                        <ChevronRight size={14} />
-                                    </a>
-                                </td>
+            <div className="bg-slate-900/40 rounded-[2.5rem] border border-slate-800 overflow-hidden relative z-10 cyber-border shadow-2xl backdrop-blur-md">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-950 border-b border-white/5">
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Node_Platform</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Entity_Identity</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Quote_NT$</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Est_Profit</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">ROI_Index</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Recommendation</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] text-right">Operations</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {filteredProducts.map(p => (
+                                <tr key={p.id} className="hover:bg-cyan-500/5 transition-colors group">
+                                    <td className="px-8 py-5">
+                                        <span className="px-3 py-1 bg-cyan-500/10 text-cyan-400 text-[9px] font-black rounded-md border border-cyan-500/20 uppercase tracking-widest">
+                                            {p.platform}
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-5 font-bold text-gray-300 text-xs max-w-md truncate group-hover:text-white transition-colors uppercase tracking-tight">{p.title}</td>
+                                    <td className="px-8 py-5 font-mono font-black text-white text-sm">NT$ {p.price.toLocaleString()}</td>
+                                    <td className="px-8 py-5 font-mono font-black text-magenta-400 text-sm cyber-text-glow">{p.estimated_profit > 0 ? `+ NT$ ${p.estimated_profit.toLocaleString()}` : '-'}</td>
+                                    <td className="px-8 py-5 font-mono font-black text-cyan-400 text-sm">{p.profit_margin_percent > 0 ? `${p.profit_margin_percent}%` : '-'}</td>
+                                    <td className="px-8 py-5">
+                                        {p.is_potential_profit ? (
+                                            <span className="flex items-center gap-2 text-magenta-400 text-[10px] font-black uppercase tracking-widest cyber-text-glow animate-pulse">
+                                                <ArrowUpDown size={14} /> POTENTIAL_ROI
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-700 text-[10px] font-black uppercase tracking-widest">NONE</span>
+                                        )}
+                                    </td>
+                                    <td className="px-8 py-5 text-right">
+                                        <a 
+                                          href={p.url} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-2 text-cyan-500 hover:text-cyan-300 text-[10px] font-black uppercase tracking-[0.2em] transition-all group/link"
+                                        >
+                                            OPEN_SOURCE
+                                            <ChevronRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
+                                        </a>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
                 
                 {filteredProducts.length === 0 && (
-                    <div className="py-20 flex flex-col items-center justify-center text-gray-500">
-                        <Monitor size={48} className="mb-4 opacity-10" />
-                        <p>未找到符合篩選條件的商品</p>
+                    <div className="py-32 flex flex-col items-center justify-center text-gray-700 font-black italic text-[10px] uppercase opacity-20 tracking-[0.5em] gap-6">
+                        <Monitor size={80} className="animate-float" />
+                        <span>No_Match_Found // Re-Index_Filters</span>
                     </div>
                 )}
             </div>

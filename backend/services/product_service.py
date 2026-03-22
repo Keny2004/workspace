@@ -12,48 +12,81 @@ class ProductService:
         return get_config_value(key, default)
 
     def process_scraped_item(self, spec_id: int, platform: str, item_data: dict):
-        # 1. Get Benchmark Price
-        benchmark = self.db.query(MarketPrice).filter(
-            MarketPrice.specification_id == spec_id
-        ).order_by(MarketPrice.updated_at.desc()).first()
+        spec = self.db.query(Specification).filter(Specification.id == spec_id).first()
+        if not spec: return
 
-        if not benchmark:
-            return # Cannot evaluate without benchmark
+        # 1. Get All Portal Benchmarks (Benchmark A)
+        benchmarks = self.db.query(MarketPrice).filter(
+            MarketPrice.specification_id == spec_id
+        ).order_by(MarketPrice.updated_at.desc()).all()
+
+        # 2. Get Real-World Listing Median (Benchmark B)
+        # Fetching latest 50 listings to get a sense of "current" market listings
+        listing_prices = [p.price for p in self.db.query(ScrapedProduct.price).filter(
+            ScrapedProduct.specification_id == spec_id
+        ).order_by(ScrapedProduct.scraped_at.desc()).limit(50).all()]
+        
+        listing_median = 0
+        if listing_prices:
+            sorted_prices = sorted(listing_prices)
+            n = len(sorted_prices)
+            listing_median = sorted_prices[n//2] if n % 2 != 0 else (sorted_prices[n//2 - 1] + sorted_prices[n//2]) / 2
+
+        # 3. Define True Market Price
+        portal_benchmark = 0
+        if benchmarks:
+            seen_sources = set()
+            latest_benchmarks = []
+            for b in benchmarks:
+                if b.source not in seen_sources:
+                    seen_sources.add(b.source)
+                    latest_benchmarks.append(b)
+            portal_benchmark = max(b.price for b in latest_benchmarks)
+        
+        # True market price is the higher of professional benchmarks or real-world medians
+        # This prevents recommending items just because a portal has an outdated low price.
+        true_market_price = max(portal_benchmark, listing_median)
+        
+        if true_market_price <= 0:
+            return # Cannot evaluate without any data
 
         price = item_data['price']
-        benchmark_price = benchmark.price
         
-        # Get profit margin from config (e.g., 5%)
-        profit_margin_str = self.get_config("profit_margin", "5")
+        # 4. Get Category-Specific Margin
+        cat_name = spec.model.category.name if spec.model and spec.model.category else ""
+        margin_key = f"profit_margin_{cat_name}"
+        profit_margin_str = self.get_config(margin_key, self.get_config("profit_margin", "5"))
+        
         try:
             profit_margin = float(profit_margin_str) / 100.0
         except:
             profit_margin = 0.05
 
-        # Pricing Logic:
-        # 1. Too cheap: price < benchmark * 0.8 ->零件機/異常 (Skip)
-        if price < benchmark_price * 0.8:
-            return
-
-        # 2. Potential Profit: benchmark * 0.8 <= price < benchmark * (1 + margin)
-        is_potential = False
-        if price < benchmark_price * (1 + profit_margin):
+        # Evaluation Logic:
+        # 1. Too cheap: price < true_market_price * 0.7 -> Likely scam or parts-only
+        if price < true_market_price * 0.7:
+            is_potential = False
+        # 2. Potential Profit: price < true_market_price * (1 - profit_margin)? 
+        # Actually user wants "profit margin" to mean "I want to buy at X% lower than market"
+        # The previous logic was price < benchmark * (1 + margin) which seems like "sell price > buy price + margin"
+        # Let's stick to the user's intent: Buy price should be significantly below market price.
+        elif price < true_market_price * (1 - profit_margin):
             is_potential = True
+        else:
+            is_potential = False
 
-        # 3. Check if already exists by external_id
+        # 5. Save/Update
         existing = self.db.query(ScrapedProduct).filter(
             ScrapedProduct.external_id == item_data['external_id'],
             ScrapedProduct.platform == platform
         ).first()
 
         if existing:
-            # Update price and basic info if needed
             existing.price = price
             existing.is_potential_profit = is_potential
             self.db.commit()
             return existing
 
-        # 4. Save new product
         new_prod = ScrapedProduct(
             specification_id=spec_id,
             platform=platform,

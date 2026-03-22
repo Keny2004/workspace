@@ -24,6 +24,7 @@ class Specification(Base):
     id = Column(Integer, primary_key=True, index=True)
     model_id = Column(Integer, ForeignKey("product_models.id"))
     name = Column(String, index=True) # e.g., 256GB, 16GB+512GB
+    is_monitored = Column(Boolean, default=False)
     model = relationship("ProductModel", back_populates="specifications")
     market_prices = relationship("MarketPrice", back_populates="specification")
     scraped_products = relationship("ScrapedProduct", back_populates="specification")

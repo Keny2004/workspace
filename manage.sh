@@ -13,6 +13,10 @@ stop_services() {
     pkill -f "uvicorn backend.main:app"
     # Find and kill Vite
     pkill -f "vite"
+    # Find and kill Cloudflare Tunnel
+    pkill -f "cloudflared tunnel"
+    # Find and kill Notification script
+    pkill -f "backend/notify_url.py"
     echo "Services stopped."
 }
 
@@ -31,10 +35,20 @@ start_services() {
     cd "$FRONTEND_DIR"
     nohup npm run dev > ../frontend.log 2>&1 &
 
+    # 3. Start Cloudflare Tunnel (Port 3000 for Frontend entry)
+    echo "Starting Cloudflare Tunnel..."
+    cd "$PROJECT_ROOT"
+    rm -f tunnel.log # Clear old URL
+    nohup cloudflared tunnel --url http://localhost:3000 > tunnel.log 2>&1 &
+    
+    # 4. Start Telegram Notification Monitor
+    echo "Starting URL Notification Monitor..."
+    nohup venv/bin/python backend/notify_url.py > notify.log 2>&1 &
+
     echo "Services started in the background."
     echo "Backend: http://localhost:8000"
     echo "Frontend: http://localhost:3000"
-    echo "Logs are available in backend.log and frontend.log"
+    echo "Logs: backend.log, frontend.log, tunnel.log, notify.log"
 }
 
 case "$1" in

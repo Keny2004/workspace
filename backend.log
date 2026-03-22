@@ -1,22 +1,16 @@
 /Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
   warnings.warn(
-INFO:     Started server process [44203]
+INFO:     Started server process [50125]
 INFO:     Waiting for application startup.
-2026-03-22 15:28:20,245 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2026-03-22 15:28:20,245 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2026-03-22 15:28:20,246 - apscheduler.scheduler - INFO - Added job "SchedulerService.update_market_prices" to job store "default"
-2026-03-22 15:28:20,246 - apscheduler.scheduler - INFO - Added job "SchedulerService.crawl_products" to job store "default"
-2026-03-22 15:28:20,246 - apscheduler.scheduler - INFO - Scheduler started
+2026-03-22 18:09:19,386 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-22 18:09:19,386 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-22 18:09:19,387 - apscheduler.scheduler - INFO - Added job "SchedulerService.update_market_prices" to job store "default"
+2026-03-22 18:09:19,387 - apscheduler.scheduler - INFO - Added job "SchedulerService.crawl_products" to job store "default"
+2026-03-22 18:09:19,387 - apscheduler.scheduler - INFO - Scheduler started
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     127.0.0.1:60401 - "WebSocket /ws/logs" [accepted]
-INFO:     connection open
-INFO:     127.0.0.1:60403 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
+INFO:     127.0.0.1:50879 - "WebSocket /ws/logs" [accepted]
 INFO:     connection closed
-INFO:     connection closed
-INFO:     127.0.0.1:60405 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
 Log WebSocket error: 
 ERROR:    Exception in ASGI application
 Traceback (most recent call last):
@@ -56,16 +50,21 @@ Traceback (most recent call last):
     await func(session)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
     await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
     await websocket.close()
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
     await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
     raise RuntimeError('Cannot call "send" once a close message has been sent.')
 RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     127.0.0.1:60407 - "WebSocket /ws/logs" [accepted]
-INFO:     connection closed
+INFO:     127.0.0.1:50881 - "WebSocket /ws/logs" [accepted]
 INFO:     connection open
+INFO:     127.0.0.1:50883 - "WebSocket /ws/status" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:51005 - "WebSocket /ws/logs" [accepted]
+INFO:     connection closed
 Log WebSocket error: 
 ERROR:    Exception in ASGI application
 Traceback (most recent call last):
@@ -105,49 +104,17 @@ Traceback (most recent call last):
     await func(session)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
     await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
     await websocket.close()
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
     await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
     raise RuntimeError('Cannot call "send" once a close message has been sent.')
 RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     connection closed
-INFO:     127.0.0.1:60409 - "WebSocket /ws/logs" [accepted]
+INFO:     127.0.0.1:51007 - "WebSocket /ws/logs" [accepted]
 INFO:     connection open
-INFO:     127.0.0.1:60411 - "POST /api/crawl HTTP/1.1" 200 OK
-2026-03-22 15:28:24,553 - Scheduler - INFO - Executing Carousell Search: iPhone 15 Pro 128G...
-Search failed for iPhone 15 Pro 128G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:28:24,739 - Scheduler - INFO - Found 0 items for iPhone 15 Pro 128G.
-2026-03-22 15:28:29,745 - Scheduler - INFO - Executing Carousell Search: iPhone 15 Pro 256G...
-Search failed for iPhone 15 Pro 256G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:28:29,820 - Scheduler - INFO - Found 0 items for iPhone 15 Pro 256G.
-2026-03-22 15:28:34,826 - Scheduler - INFO - Executing Carousell Search: iPhone 15 Pro 512G...
-Search failed for iPhone 15 Pro 512G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:28:34,904 - Scheduler - INFO - Found 0 items for iPhone 15 Pro 512G.
-2026-03-22 15:28:39,910 - Scheduler - INFO - Executing Carousell Search: iPad Air 5 64G...
-Search failed for iPad Air 5 64G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:28:40,023 - Scheduler - INFO - Found 0 items for iPad Air 5 64G.
-2026-03-22 15:28:45,029 - Scheduler - INFO - Executing Carousell Search: iPad Air 5 256G...
-Search failed for iPad Air 5 256G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:28:45,120 - Scheduler - INFO - Found 0 items for iPad Air 5 256G.
-2026-03-22 15:28:50,124 - Scheduler - INFO - Executing Carousell Search: 11吋-wifi-256g (2025 M5版) ...
-Search failed for 11吋-wifi-256g (2025 M5版) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:28:50,222 - Scheduler - INFO - Found 0 items for 11吋-wifi-256g (2025 M5版) .
-2026-03-22 15:28:55,228 - Scheduler - INFO - Executing Carousell Search: 11吋-wifi-512g (2025 M5版) ...
-Search failed for 11吋-wifi-512g (2025 M5版) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:28:55,326 - Scheduler - INFO - Found 0 items for 11吋-wifi-512g (2025 M5版) .
-2026-03-22 15:29:00,334 - Scheduler - INFO - Executing Carousell Search: 11吋-wifi-256g (2024 M4版) ...
-Search failed for 11吋-wifi-256g (2024 M4版) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:29:00,419 - Scheduler - INFO - Found 0 items for 11吋-wifi-256g (2024 M4版) .
-INFO:     connection closed
-INFO:     127.0.0.1:60422 - "WebSocket /ws/status" [accepted]
+INFO:     127.0.0.1:51010 - "WebSocket /ws/status" [accepted]
 INFO:     connection open
-INFO:     connection closed
-INFO:     127.0.0.1:60429 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-INFO:     127.0.0.1:60428 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60430 - "GET /api/categories HTTP/1.1" 200 OK
 Log WebSocket error: 
 ERROR:    Exception in ASGI application
 Traceback (most recent call last):
@@ -187,7 +154,7 @@ Traceback (most recent call last):
     await func(session)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
     await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
     await websocket.close()
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
     await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
@@ -195,13 +162,13 @@ Traceback (most recent call last):
     raise RuntimeError('Cannot call "send" once a close message has been sent.')
 RuntimeError: Cannot call "send" once a close message has been sent.
 INFO:     connection closed
-INFO:     127.0.0.1:60432 - "WebSocket /ws/status" [accepted]
+INFO:     connection closed
+INFO:     127.0.0.1:51025 - "WebSocket /ws/logs" [accepted]
 INFO:     connection open
 INFO:     connection closed
-INFO:     127.0.0.1:60436 - "WebSocket /ws/status" [accepted]
+INFO:     127.0.0.1:51027 - "WebSocket /ws/logs" [accepted]
 INFO:     connection open
-INFO:     connection closed
-INFO:     127.0.0.1:60438 - "WebSocket /ws/logs" [accepted]
+INFO:     127.0.0.1:51029 - "WebSocket /ws/status" [accepted]
 INFO:     connection open
 Log WebSocket error: 
 ERROR:    Exception in ASGI application
@@ -242,7 +209,53 @@ Traceback (most recent call last):
     await func(session)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
     await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
+    await websocket.close()
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
+    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
+    raise RuntimeError('Cannot call "send" once a close message has been sent.')
+RuntimeError: Cannot call "send" once a close message has been sent.
+Log WebSocket error: 
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
+    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
+    await func(session)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
+    await dependant.call(**solved_result.values)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
     await websocket.close()
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
     await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
@@ -250,17 +263,11 @@ Traceback (most recent call last):
     raise RuntimeError('Cannot call "send" once a close message has been sent.')
 RuntimeError: Cannot call "send" once a close message has been sent.
 INFO:     connection closed
-INFO:     127.0.0.1:60440 - "WebSocket /ws/logs" [accepted]
-INFO:     connection open
 INFO:     connection closed
-INFO:     127.0.0.1:60442 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-INFO:     connection closed
-INFO:     127.0.0.1:60444 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-2026-03-22 15:29:05,424 - Scheduler - INFO - Executing Carousell Search: 11吋-wifi-512g (2024 M4版) ...
-Search failed for 11吋-wifi-512g (2024 M4版) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:29:05,508 - Scheduler - INFO - Found 0 items for 11吋-wifi-512g (2024 M4版) .
+INFO:     127.0.0.1:51036 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51037 - "GET /api/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51038 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51041 - "GET /api/categories HTTP/1.1" 200 OK
 Log WebSocket error: 
 ERROR:    Exception in ASGI application
 Traceback (most recent call last):
@@ -300,50 +307,22 @@ Traceback (most recent call last):
     await func(session)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
     await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
     await websocket.close()
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
     await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
     raise RuntimeError('Cannot call "send" once a close message has been sent.')
 RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     connection closed
-INFO:     127.0.0.1:60447 - "GET /api/config HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60448 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60451 - "GET /api/config HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60454 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60458 - "GET /api/products HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60461 - "GET /api/products HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60466 - "GET /api/products?is_potential=true HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60467 - "GET /api/products?is_potential=true HTTP/1.1" 200 OK
-2026-03-22 15:29:10,525 - Scheduler - INFO - Executing Carousell Search: 13吋-wifi-256g (2025 M5版) ...
-INFO:     127.0.0.1:60470 - "GET /api/market-prices/all HTTP/1.1" 200 OK
-Search failed for 13吋-wifi-256g (2025 M5版) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:29:10,637 - Scheduler - INFO - Found 0 items for 13吋-wifi-256g (2025 M5版) .
-INFO:     127.0.0.1:60477 - "WebSocket /ws/status" [accepted]
-INFO:     connection closed
-INFO:     127.0.0.1:60482 - "WebSocket /ws/status" [accepted]
+INFO:     127.0.0.1:51043 - "WebSocket /ws/logs" [accepted]
 INFO:     connection open
-INFO:     127.0.0.1:60480 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60483 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60473 - "GET /api/market-prices/all HTTP/1.1" 200 OK
-2026-03-22 15:29:15,641 - Scheduler - INFO - Executing Carousell Search: 13吋-wifi-512g (2025 M5版) ...
-Search failed for 13吋-wifi-512g (2025 M5版) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:29:15,723 - Scheduler - INFO - Found 0 items for 13吋-wifi-512g (2025 M5版) .
-2026-03-22 15:29:20,728 - Scheduler - INFO - Executing Carousell Search: 13吋-wifi-256g (2024 M4版) ...
-Search failed for 13吋-wifi-256g (2024 M4版) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:29:20,805 - Scheduler - INFO - Found 0 items for 13吋-wifi-256g (2024 M4版) .
-INFO:     connection closed
-INFO:     127.0.0.1:60489 - "WebSocket /ws/status" [accepted]
+INFO:     127.0.0.1:51045 - "WebSocket /ws/status" [accepted]
 INFO:     connection open
 INFO:     connection closed
-INFO:     127.0.0.1:60493 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
 INFO:     connection closed
-INFO:     127.0.0.1:60495 - "WebSocket /ws/logs" [accepted]
+INFO:     127.0.0.1:51049 - "WebSocket /ws/logs" [accepted]
 INFO:     connection open
-INFO:     connection closed
-INFO:     127.0.0.1:60497 - "WebSocket /ws/logs" [accepted]
+INFO:     127.0.0.1:51051 - "WebSocket /ws/status" [accepted]
 INFO:     connection open
 Log WebSocket error: 
 ERROR:    Exception in ASGI application
@@ -384,39 +363,32 @@ Traceback (most recent call last):
     await func(session)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
     await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
     await websocket.close()
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
     await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
     raise RuntimeError('Cannot call "send" once a close message has been sent.')
 RuntimeError: Cannot call "send" once a close message has been sent.
-2026-03-22 15:29:25,814 - Scheduler - INFO - Executing Carousell Search: 13吋-wifi-512g (2024 M4版) ...
-Search failed for 13吋-wifi-512g (2024 M4版) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:29:25,911 - Scheduler - INFO - Found 0 items for 13吋-wifi-512g (2024 M4版) .
-2026-03-22 15:29:30,919 - Scheduler - INFO - Executing Carousell Search: 11吋-wifi-128g (2022 第6代 M2版) ...
-Search failed for 11吋-wifi-128g (2022 第6代 M2版) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:29:31,001 - Scheduler - INFO - Found 0 items for 11吋-wifi-128g (2022 第6代 M2版) .
-2026-03-22 15:29:36,004 - Scheduler - INFO - Executing Carousell Search: 11吋-wifi-256g (2022 第6代 M2版) ...
-Search failed for 11吋-wifi-256g (2022 第6代 M2版) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:29:36,095 - Scheduler - INFO - Found 0 items for 11吋-wifi-256g (2022 第6代 M2版) .
-2026-03-22 15:29:41,099 - Scheduler - INFO - Executing Carousell Search: 11吋-wifi-128g (2021 第5代 M1版) ...
-Search failed for 11吋-wifi-128g (2021 第5代 M1版) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:29:41,186 - Scheduler - INFO - Found 0 items for 11吋-wifi-128g (2021 第5代 M1版) .
-2026-03-22 15:29:46,192 - Scheduler - INFO - Executing Carousell Search: 11吋-wifi-256g (2021 第5代 M1版) ...
-Search failed for 11吋-wifi-256g (2021 第5代 M1版) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:29:46,292 - Scheduler - INFO - Found 0 items for 11吋-wifi-256g (2021 第5代 M1版) .
-2026-03-22 15:29:51,299 - Scheduler - INFO - Executing Carousell Search: 12.9吋-wifi-128g (2022 第6代 M2) ...
-Search failed for 12.9吋-wifi-128g (2022 第6代 M2) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:29:51,391 - Scheduler - INFO - Found 0 items for 12.9吋-wifi-128g (2022 第6代 M2) .
+INFO:     127.0.0.1:51052 - "POST /api/crawl/resume HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51055 - "POST /api/crawl HTTP/1.1" 200 OK
+2026-03-22 18:11:03,420 - Scheduler - INFO - Stealth resting (high) for 40.0s before next search...
+2026-03-22 18:11:43,565 - Scheduler - INFO - Executing Carousell Search: Macbook Pro 16" M1 MAX / 10C32G / 32G / 1T...
+2026-03-22 18:11:43,567 - ProxyService - INFO - Fetching fresh free proxy list...
+2026-03-22 18:11:44,244 - ProxyService - INFO - Total proxy pool: 897 addresses.
+Attempt 1/3 for Macbook Pro 16" M1 MAX / 10C32G / 32G / 1T using Direct IP...
+Stealth waiting 14.7s before request...
+Attempting to get CSRF token with Direct IP...
+403 Forbidden detected on Direct IP. Blocked!
+Attempt 2/3 for Macbook Pro 16" M1 MAX / 10C32G / 32G / 1T using Direct IP...
+Stealth waiting 8.5s before request...
+Attempting to get CSRF token with Direct IP...
+403 Forbidden detected on Direct IP. Blocked!
+INFO:     127.0.0.1:51079 - "POST /api/crawl/pause HTTP/1.1" 200 OK
 INFO:     connection closed
-INFO:     127.0.0.1:60512 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
 INFO:     connection closed
-INFO:     127.0.0.1:60514 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60518 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-INFO:     127.0.0.1:60519 - "GET /api/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51089 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51090 - "GET /api/config HTTP/1.1" 200 OK
 Log WebSocket error: 
 ERROR:    Exception in ASGI application
 Traceback (most recent call last):
@@ -456,477 +428,14 @@ Traceback (most recent call last):
     await func(session)
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
     await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 109, in websocket_logs
     await websocket.close()
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
     await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
     raise RuntimeError('Cannot call "send" once a close message has been sent.')
 RuntimeError: Cannot call "send" once a close message has been sent.
-2026-03-22 15:29:56,398 - Scheduler - INFO - Executing Carousell Search: 12.9吋-wifi-256g (2022 第6代 M2) ...
-Search failed for 12.9吋-wifi-256g (2022 第6代 M2) : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:29:56,503 - Scheduler - INFO - Found 0 items for 12.9吋-wifi-256g (2022 第6代 M2) .
-2026-03-22 15:30:01,510 - Scheduler - INFO - Executing Carousell Search: 17-256g ...
-Search failed for 17-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:30:01,631 - Scheduler - INFO - Found 0 items for 17-256g .
-2026-03-22 15:30:06,639 - Scheduler - INFO - Executing Carousell Search: 17-512g ...
-Search failed for 17-512g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:30:06,719 - Scheduler - INFO - Found 0 items for 17-512g .
-2026-03-22 15:30:11,726 - Scheduler - INFO - Executing Carousell Search: 17pro-256g ...
-Search failed for 17pro-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:30:11,805 - Scheduler - INFO - Found 0 items for 17pro-256g .
-2026-03-22 15:30:16,807 - Scheduler - INFO - Executing Carousell Search: 17pro-512g ...
-Search failed for 17pro-512g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:30:16,881 - Scheduler - INFO - Found 0 items for 17pro-512g .
-2026-03-22 15:30:21,886 - Scheduler - INFO - Executing Carousell Search: 17proMax-256g ...
-Search failed for 17proMax-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:30:21,954 - Scheduler - INFO - Found 0 items for 17proMax-256g .
-2026-03-22 15:30:26,961 - Scheduler - INFO - Executing Carousell Search: 17proMax-512g ...
-Search failed for 17proMax-512g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:30:27,049 - Scheduler - INFO - Found 0 items for 17proMax-512g .
-2026-03-22 15:30:32,051 - Scheduler - INFO - Executing Carousell Search: 17air-256g ...
-Search failed for 17air-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:30:32,149 - Scheduler - INFO - Found 0 items for 17air-256g .
-2026-03-22 15:30:37,155 - Scheduler - INFO - Executing Carousell Search: 17air-512g ...
-Search failed for 17air-512g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:30:37,240 - Scheduler - INFO - Found 0 items for 17air-512g .
-2026-03-22 15:30:42,246 - Scheduler - INFO - Executing Carousell Search: 16e-128g ...
-Search failed for 16e-128g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:30:42,338 - Scheduler - INFO - Found 0 items for 16e-128g .
-2026-03-22 15:30:47,344 - Scheduler - INFO - Executing Carousell Search: 16e-256g ...
-Search failed for 16e-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:30:47,431 - Scheduler - INFO - Found 0 items for 16e-256g .
-2026-03-22 15:30:52,438 - Scheduler - INFO - Executing Carousell Search: 16-128g ...
-Search failed for 16-128g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:30:52,541 - Scheduler - INFO - Found 0 items for 16-128g .
-2026-03-22 15:30:57,546 - Scheduler - INFO - Executing Carousell Search: 16-256g ...
-Search failed for 16-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:30:57,629 - Scheduler - INFO - Found 0 items for 16-256g .
-2026-03-22 15:31:02,636 - Scheduler - INFO - Executing Carousell Search: 16plus-128g ...
-Search failed for 16plus-128g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:31:02,722 - Scheduler - INFO - Found 0 items for 16plus-128g .
-INFO:     connection closed
-INFO:     127.0.0.1:60561 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60563 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-INFO:     127.0.0.1:60564 - "GET /api/categories HTTP/1.1" 200 OK
-2026-03-22 15:31:07,729 - Scheduler - INFO - Executing Carousell Search: 16plus-256g ...
-Search failed for 16plus-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:31:07,813 - Scheduler - INFO - Found 0 items for 16plus-256g .
-2026-03-22 15:31:12,816 - Scheduler - INFO - Executing Carousell Search: 16pro-128g ...
-Search failed for 16pro-128g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:31:12,897 - Scheduler - INFO - Found 0 items for 16pro-128g .
-2026-03-22 15:31:17,905 - Scheduler - INFO - Executing Carousell Search: 16pro-256g ...
-Search failed for 16pro-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:31:17,987 - Scheduler - INFO - Found 0 items for 16pro-256g .
-2026-03-22 15:31:22,990 - Scheduler - INFO - Executing Carousell Search: 16proMax-256g ...
-Search failed for 16proMax-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:31:23,084 - Scheduler - INFO - Found 0 items for 16proMax-256g .
-2026-03-22 15:31:28,090 - Scheduler - INFO - Executing Carousell Search: 16proMax-512g ...
-Search failed for 16proMax-512g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:31:28,171 - Scheduler - INFO - Found 0 items for 16proMax-512g .
-2026-03-22 15:31:33,178 - Scheduler - INFO - Executing Carousell Search: 15-128g ...
-Search failed for 15-128g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:31:33,251 - Scheduler - INFO - Found 0 items for 15-128g .
-2026-03-22 15:31:38,257 - Scheduler - INFO - Executing Carousell Search: 15-256g ...
-Search failed for 15-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:31:38,343 - Scheduler - INFO - Found 0 items for 15-256g .
-INFO:     connection closed
-INFO:     127.0.0.1:60592 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-INFO:     connection closed
-INFO:     127.0.0.1:60593 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60595 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-INFO:     127.0.0.1:60596 - "GET /api/categories HTTP/1.1" 200 OK
-2026-03-22 15:31:43,347 - Scheduler - INFO - Executing Carousell Search: 15plus-128g ...
-Search failed for 15plus-128g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:31:43,458 - Scheduler - INFO - Found 0 items for 15plus-128g .
-INFO:     127.0.0.1:60597 - "POST /api/crawl/pause HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:60599 - "WebSocket /ws/logs" [accepted]
-INFO:     connection closed
-INFO:     connection open
-INFO:     127.0.0.1:60601 - "WebSocket /ws/logs" [accepted]
-INFO:     connection open
-INFO:     connection closed
-2026-03-22 15:31:48,463 - Scheduler - INFO - Executing Carousell Search: 15plus-256g ...
-Search failed for 15plus-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:31:48,535 - Scheduler - INFO - Found 0 items for 15plus-256g .
-Log WebSocket error: 
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
-    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
-    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
-    await func(session)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
-    await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
-    @app.get("/api/products")
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
-    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
-    raise RuntimeError('Cannot call "send" once a close message has been sent.')
-RuntimeError: Cannot call "send" once a close message has been sent.
-2026-03-22 15:31:53,543 - Scheduler - INFO - Executing Carousell Search: 15pro-128g ...
-Search failed for 15pro-128g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:31:53,619 - Scheduler - INFO - Found 0 items for 15pro-128g .
-INFO:     connection closed
-INFO:     127.0.0.1:60605 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-INFO:     connection closed
-INFO:     127.0.0.1:60609 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-Log WebSocket error: 
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
-    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
-    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
-    await func(session)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
-    await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
-    @app.get("/api/products")
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
-    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
-    raise RuntimeError('Cannot call "send" once a close message has been sent.')
-RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     127.0.0.1:60610 - "POST /api/crawl/pause HTTP/1.1" 404 Not Found
-2026-03-22 15:31:58,625 - Scheduler - INFO - Executing Carousell Search: 15pro-256g ...
-Search failed for 15pro-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:31:58,707 - Scheduler - INFO - Found 0 items for 15pro-256g .
-2026-03-22 15:32:03,709 - Scheduler - INFO - Executing Carousell Search: 15proMax-256g ...
-Search failed for 15proMax-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:32:03,802 - Scheduler - INFO - Found 0 items for 15proMax-256g .
-INFO:     127.0.0.1:60613 - "POST /api/crawl/pause HTTP/1.1" 404 Not Found
-INFO:     connection closed
-INFO:     127.0.0.1:60615 - "WebSocket /ws/logs" [accepted]
-INFO:     connection open
-INFO:     127.0.0.1:60617 - "WebSocket /ws/logs" [accepted]
-INFO:     connection open
-INFO:     connection closed
-Log WebSocket error: 
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
-    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
-    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
-    await func(session)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
-    await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
-    @app.get("/api/products")
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
-    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
-    raise RuntimeError('Cannot call "send" once a close message has been sent.')
-RuntimeError: Cannot call "send" once a close message has been sent.
-2026-03-22 15:32:08,806 - Scheduler - INFO - Executing Carousell Search: 15proMax-512g ...
-Search failed for 15proMax-512g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:32:08,899 - Scheduler - INFO - Found 0 items for 15proMax-512g .
-INFO:     connection closed
-INFO:     127.0.0.1:60622 - "GET /api/config HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60623 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60628 - "GET /api/config HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60629 - "GET /api/categories HTTP/1.1" 200 OK
-Log WebSocket error: 
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
-    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
-    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
-    await func(session)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
-    await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
-    @app.get("/api/products")
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
-    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
-    raise RuntimeError('Cannot call "send" once a close message has been sent.')
-RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     127.0.0.1:60631 - "WebSocket /ws/logs" [accepted]
-INFO:     connection open
-Log WebSocket error: 
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
-    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
-    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
-    await func(session)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
-    await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
-    @app.get("/api/products")
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
-    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
-    raise RuntimeError('Cannot call "send" once a close message has been sent.')
-RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     connection closed
-INFO:     127.0.0.1:60635 - "WebSocket /ws/logs" [accepted]
-INFO:     connection open
-2026-03-22 15:32:13,907 - Scheduler - INFO - Executing Carousell Search: SE3  64g ...
-Search failed for SE3  64g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:32:13,982 - Scheduler - INFO - Found 0 items for SE3  64g .
-INFO:     connection closed
-INFO:     127.0.0.1:60636 - "GET /api/products HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60639 - "GET /api/products HTTP/1.1" 200 OK
-Log WebSocket error: 
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
-    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
-    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
-    await func(session)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
-    await dependant.call(**solved_result.values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 97, in websocket_logs
-    @app.get("/api/products")
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
-    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
-    raise RuntimeError('Cannot call "send" once a close message has been sent.')
-RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     127.0.0.1:60641 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-INFO:     connection closed
-INFO:     127.0.0.1:60645 - "WebSocket /ws/status" [accepted]
-INFO:     connection open
-2026-03-22 15:32:18,987 - Scheduler - INFO - Executing Carousell Search: SE3  128g ...
-Search failed for SE3  128g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:32:19,068 - Scheduler - INFO - Found 0 items for SE3  128g .
-2026-03-22 15:32:24,074 - Scheduler - INFO - Executing Carousell Search: SE3  256g ...
-Search failed for SE3  256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:32:24,151 - Scheduler - INFO - Found 0 items for SE3  256g .
-2026-03-22 15:32:29,157 - Scheduler - INFO - Executing Carousell Search: mini7-wifi版-128g ~新增~ ...
-Search failed for mini7-wifi版-128g ~新增~ : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:32:29,240 - Scheduler - INFO - Found 0 items for mini7-wifi版-128g ~新增~ .
-2026-03-22 15:32:34,248 - Scheduler - INFO - Executing Carousell Search: mini7-wifi版-256g ~新增~ ...
-Search failed for mini7-wifi版-256g ~新增~ : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:32:34,335 - Scheduler - INFO - Found 0 items for mini7-wifi版-256g ~新增~ .
-2026-03-22 15:32:39,341 - Scheduler - INFO - Executing Carousell Search: mini6-wifi版-64g ...
-Search failed for mini6-wifi版-64g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:32:39,431 - Scheduler - INFO - Found 0 items for mini6-wifi版-64g .
-2026-03-22 15:32:44,437 - Scheduler - INFO - Executing Carousell Search: mini6-wifi版-256g ...
-Search failed for mini6-wifi版-256g : 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:32:44,512 - Scheduler - INFO - Found 0 items for mini6-wifi版-256g .
-2026-03-22 15:32:49,521 - Scheduler - INFO - Executing Carousell Search: iPhone 17 Pro Max 2T...
-Search failed for iPhone 17 Pro Max 2T: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:32:49,611 - Scheduler - INFO - Found 0 items for iPhone 17 Pro Max 2T.
-2026-03-22 15:32:54,616 - Scheduler - INFO - Executing Carousell Search: iPhone 17 Pro Max 1T...
-Search failed for iPhone 17 Pro Max 1T: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:32:54,695 - Scheduler - INFO - Found 0 items for iPhone 17 Pro Max 1T.
-2026-03-22 15:32:59,698 - Scheduler - INFO - Executing Carousell Search: iPhone 17 Pro Max 512G...
-Search failed for iPhone 17 Pro Max 512G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:32:59,785 - Scheduler - INFO - Found 0 items for iPhone 17 Pro Max 512G.
-2026-03-22 15:33:04,790 - Scheduler - INFO - Executing Carousell Search: iPhone 17 Pro Max 256G...
-Search failed for iPhone 17 Pro Max 256G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:33:04,874 - Scheduler - INFO - Found 0 items for iPhone 17 Pro Max 256G.
-2026-03-22 15:33:09,877 - Scheduler - INFO - Executing Carousell Search: iPhone 17 Pro 1T...
-Search failed for iPhone 17 Pro 1T: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:33:09,970 - Scheduler - INFO - Found 0 items for iPhone 17 Pro 1T.
-2026-03-22 15:33:14,972 - Scheduler - INFO - Executing Carousell Search: iPhone 17 Pro 512G...
-Search failed for iPhone 17 Pro 512G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:33:15,071 - Scheduler - INFO - Found 0 items for iPhone 17 Pro 512G.
-2026-03-22 15:33:20,074 - Scheduler - INFO - Executing Carousell Search: iPhone 17 Pro 256G...
-Search failed for iPhone 17 Pro 256G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:33:20,156 - Scheduler - INFO - Found 0 items for iPhone 17 Pro 256G.
-2026-03-22 15:33:20,248 - apscheduler.executors.default - INFO - Running job "SchedulerService.crawl_products (trigger: interval[0:05:00], next run at: 2026-03-22 15:33:20 CST)" (scheduled at 2026-03-22 15:33:20.245546+08:00)
-2026-03-22 15:33:20,255 - Scheduler - INFO - Executing Carousell Search: iPhone 15 Pro 128G...
-Search failed for iPhone 15 Pro 128G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:33:20,328 - Scheduler - INFO - Found 0 items for iPhone 15 Pro 128G.
-2026-03-22 15:33:25,158 - Scheduler - INFO - Executing Carousell Search: iPhone Air 1T...
-Search failed for iPhone Air 1T: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:33:25,243 - Scheduler - INFO - Found 0 items for iPhone Air 1T.
-2026-03-22 15:33:25,330 - Scheduler - INFO - Executing Carousell Search: iPhone 15 Pro 256G...
-Search failed for iPhone 15 Pro 256G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:33:25,395 - Scheduler - INFO - Found 0 items for iPhone 15 Pro 256G.
-2026-03-22 15:33:30,249 - Scheduler - INFO - Executing Carousell Search: iPhone Air 512G...
-Search failed for iPhone Air 512G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:33:30,337 - Scheduler - INFO - Found 0 items for iPhone Air 512G.
-2026-03-22 15:33:30,399 - Scheduler - INFO - Executing Carousell Search: iPhone 15 Pro 512G...
-Search failed for iPhone 15 Pro 512G: 502 Server Error: Bad Gateway for url: https://tw.carousell.com/ds/filter/cf/4.0/search/?_path=%2Fcf%2F4.0%2Fsearch%2F&l=zh-Hant-TW
-2026-03-22 15:33:30,469 - Scheduler - INFO - Found 0 items for iPhone 15 Pro 512G.
+INFO:     127.0.0.1:51088 - "GET /api/market-prices/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51093 - "GET /api/market-prices/all HTTP/1.1" 200 OK
+Attempt 3/3 for Macbook Pro 16" M1 MAX / 10C32G / 32G / 1T using Direct IP...
+Stealth waiting 13.5s before request...
