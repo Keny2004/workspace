@@ -68,14 +68,19 @@ class CarousellScraper(BaseScraper):
         try:
             print(f"Attempting to get CSRF token with {p_display}...")
             response = self.session.get(self.base_url, proxies=proxies, timeout=15)
-            # Find CSRF token in the set-cookie or script tags
-            # Usually Carousell has it in the cookie '_csrf' or a window obj
+            
+            if response.status_code == 403:
+                print(f"403 Forbidden detected on {p_display} during CSRF check.")
+                if not self.current_proxy:
+                    self.block_direct_ip = True
+                self.session.cookies.clear()
+                self.current_proxy = self.proxy_service.get_working_proxy()
+                return None # Trigger retry in search loop
+                
             csrf_token = self.session.cookies.get("_csrf")
             if not csrf_token:
-                # Fallback: search in HTML for something like "csrfToken":"..."
                 match = re.search(r'"csrfToken":"([^"]+)"', response.text)
-                if match:
-                    csrf_token = match.group(1)
+                if match: csrf_token = match.group(1)
             return csrf_token
         except Exception as e:
             print(f"Error getting CSRF token: {e}")
@@ -101,15 +106,15 @@ class CarousellScraper(BaseScraper):
 
         import time
         import random
-        from datetime import datetime, timedelta
         
         max_attempts = 3
-        
-        self.block_direct_ip = getattr(self, 'block_direct_ip', False)
+        # Ensure block_direct_ip persists if not initialized
+        if not hasattr(self, 'block_direct_ip'):
+            self.block_direct_ip = False
         
         for attempt in range(1, max_attempts + 1):
-            if not self.current_proxy and not self.block_direct_ip:
-                # Try getting a proxy if it's not our first success, but allow direct first if not blocked
+            if (not self.current_proxy) and self.block_direct_ip:
+                print("Direct IP is blocked. Forcing proxy usage...")
                 self.current_proxy = self.proxy_service.get_working_proxy()
             
             proxies = None
@@ -120,26 +125,34 @@ class CarousellScraper(BaseScraper):
             print(f"Attempt {attempt}/{max_attempts} for {query} using {p_display}...")
 
             try:
-                # Stealth delay: Every request should be slow
-                wait_time = random.uniform(5.0, 15.0)
-                print(f"Stealth waiting {wait_time:.1f}s before request...")
+                # Shorter human-like jitter: 3-7 seconds
+                wait_time = random.uniform(3.0, 7.0)
+                print(f"Human-like jitter: Waiting {wait_time:.1f}s before request...")
                 time.sleep(wait_time)
 
                 if not self.session.cookies.get("_csrf") or attempt > 1:
                      self.warm_up(proxies=proxies)
                 
                 csrf_token = self._get_csrf_token(proxies=proxies)
+                if not csrf_token:
+                    # If CSRF failed (likely 403), retry within the loop
+                    print("CSRF retrieval failed. Retrying with new proxy...")
+                    self.current_proxy = self.proxy_service.get_working_proxy()
+                    continue
+
                 if csrf_token:
-                    self.session.headers.update({"csrf-token": csrf_token})
+                    self.session.headers.update({
+                        "csrf-token": csrf_token,
+                        "Content-Type": "application/json"
+                    })
 
                 response = self.session.post(self.search_api, json=payload, timeout=20, proxies=proxies)
                 last_status = response.status_code
                 
                 if response.status_code == 403:
-                    print(f"403 Forbidden detected on {p_display}. Blocked!")
+                    print(f"403 Forbidden detected on {p_display}. Rotating...")
                     if not self.current_proxy:
                         self.block_direct_ip = True
-                    # Clear session and rotate
                     self.session.cookies.clear()
                     self.current_proxy = self.proxy_service.get_working_proxy()
                     continue
