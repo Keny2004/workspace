@@ -19,3 +19,7 @@
 2026-03-22T03:25:50Z INF Starting metrics server on 127.0.0.1:20245/metrics
 2026-03-22T03:25:50Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveP256] connIndex=0 event=0 ip=198.41.192.77
 2026-03-22T03:25:51Z INF Registered tunnel connection connIndex=0 connection=6c1775b0-313c-4a5f-8a71-ed27f174d340 event=0 ip=198.41.192.77 location=khh02 protocol=quic
+2026-03-22T04:33:00Z ERR  error="Incoming request ended abruptly: context canceled" connIndex=0 event=1 ingressRule=0 originService=http://localhost:8000
+2026-03-22T04:33:00Z ERR  error="Incoming request ended abruptly: context canceled" connIndex=0 event=1 ingressRule=0 originService=http://localhost:8000
+2026-03-22T04:33:00Z ERR Request failed error="Incoming request ended abruptly: context canceled" connIndex=0 dest=https://promise-automated-chorus-bag.trycloudflare.com/api/system_stats event=0 ip=198.41.192.77 type=http
+2026-03-22T04:33:00Z ERR Request failed error="Incoming request ended abruptly: context canceled" connIndex=0 dest=https://promise-automated-chorus-bag.trycloudflare.com/api/system_stats event=0 ip=198.41.192.77 type=http

@@ -70,8 +70,12 @@ def load_config():
 def load_targets():
     try:
         with open("targets.yaml", "r", encoding="utf-8") as f:
-            return yaml.safe_load(f).get("targets", [])
-    except Exception:
+            data = yaml.safe_load(f)
+            if isinstance(data, list):
+                return data
+            return data.get("targets", []) if data else []
+    except Exception as e:
+        logger.error(f"讀取 targets.yaml 失敗: {e}")
         return []
 
 config = load_config()
@@ -122,19 +126,28 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
+@app.get("/api/system_status")
+async def get_system_status():
+    """傳回系統運行狀態與資料庫統計"""
+    return {
+        "stats": global_stats,
+        "db_size_mb": round(database.get_db_size() / (1024 * 1024), 2),
+        "db_rows": database.get_row_counts(),
+        "uptime_start": app.state.start_time if hasattr(app.state, "start_time") else None
+    }
 @app.get("/api/deals")
-def get_deals(target: str = None, include_read: bool = False, spec: str = None):
-    deals = database.get_profitable_deals(target_name=target, include_read=include_read, specification=spec)
+async def get_profitable_deals(limit: int = 50, target: str = None, spec: str = None, category: str = None, include_read: bool = False):
+    deals = database.get_profitable_deals(limit=limit, target_name=target, specification=spec, category=category, include_read=include_read)
     return {"status": "success", "data": deals}
 
 @app.get("/api/market")
-def get_market(target: str = None, include_read: bool = False, spec: str = None):
-    items = database.get_items(include_read=include_read, target_name=target, specification=spec)
+async def get_items(limit: int = 50, status: str = None, target: str = None, spec: str = None, category: str = None, include_read: bool = False):
+    items = database.get_items(limit=limit, status=status, target_name=target, specification=spec, category=category, include_read=include_read)
     return {"status": "success", "data": items}
 
 @app.get("/api/parts")
-def get_parts(target: str = None, include_read: bool = False, spec: str = None):
-    parts = database.get_parts_deals(target_name=target, include_read=include_read, specification=spec)
+async def get_parts(target: str = None, include_read: bool = False, spec: str = None, category: str = None):
+    parts = database.get_parts_deals(target_name=target, include_read=include_read, specification=spec, category=category)
     return {"status": "success", "data": parts}
 
 @app.post("/api/mark_read")
@@ -147,17 +160,66 @@ async def mark_read(request: Request):
         return {"status": "success"}
     return {"status": "error", "message": "Failed to update read status"}
 
-# 系統追蹤統計數據
-global_stats = {}
+@app.post("/api/clear_db")
+async def clear_db():
+    if database.clear_items():
+        return {"status": "success"}
+    return {"status": "error", "message": "Failed to clear database"}
 
-@app.get("/api/system_stats")
-def get_system_stats():
-    return {"status": "success", "targets": targets_list, "stats": global_stats}
+@app.post("/api/clear_market_stats")
+async def clear_market_stats():
+    if database.clear_market_stats():
+        return {"status": "success"}
+    return {"status": "error", "message": "Failed to clear market stats"}
+
+@app.post("/api/delete_item")
+async def delete_item(request: Request):
+    data = await request.json()
+    item_id = data.get("id")
+    if database.delete_specific_item(item_id):
+        return {"status": "success"}
+    return {"status": "error", "message": "Failed to delete item"}
+
+# 全域統計數據 (啟動時從資料庫載入)
+global_stats = {
+    "scraped": 0,
+    "ignored": 0,
+    "saved": 0,
+    "deals": 0
+}
+
+def load_initial_stats():
+    global global_stats
+    db_stats = database.get_cumulative_stats()
+    if db_stats:
+        global_stats["scraped"] = db_stats.get("total_scraped", 0)
+        global_stats["ignored"] = db_stats.get("total_ignored", 0)
+        global_stats["saved"] = db_stats.get("total_saved", 0)
+        global_stats["deals"] = db_stats.get("total_deals", 0)
+    logger.info(f"已從資料庫載入累計統計: {global_stats}")
+
+load_initial_stats()
 
 @app.get("/api/targets")
-def get_targets():
-    """ 獲取原始監控目標清單 """
-    return {"status": "success", "data": load_targets()}
+async def get_targets(category: str = None):
+    targets = load_targets()
+    if category:
+        targets = [t for t in targets if t.get("category") == category]
+    return {"status": "success", "data": targets}
+
+@app.get("/api/system_stats")
+async def get_system_stats(category: str = None):
+    targets = load_targets()
+    if category:
+        targets = [t for t in targets if t.get("category") == category]
+    
+    cumulative = database.get_cumulative_stats()
+    return {"status": "success", "targets": targets, "stats": cumulative}
+
+@app.get("/api/market_stats")
+async def get_market_stats(target: str = None):
+    stats = database.get_market_price_stats(target_name=target)
+    return {"status": "success", "data": stats}
 
 @app.post("/api/save_config")
 async def save_config(request: Request):
@@ -354,20 +416,49 @@ async def delete_target(request: Request):
 async def send_market_stats():
     stats = []
     for t in targets_list:
-        name = t.get("name", "Unknown")
-        initial = float(t.get("market_price_estimate", 0))
-        # 取得該目標所有樣本以計算各規格市價
-        all_stored = database.get_items(limit=500, target_name=name, include_read=True)
+        target = t # Use 't' as the target config
+        name = target.get("name", "Unknown")
+        initial = float(target.get("market_price_estimate", 0))
+        category = target.get("category", "phone") # Default to 'phone' if not specified
+        
+        # 1. 取得歷史數據計算動態市價
+        all_stored = database.get_items(limit=100, target_name=name, include_read=True)
         
         # 1. 總體市價
-        dyn_price = analyzer.calculate_dynamic_market_price(all_stored, initial)
+        dyn_price = analyzer.calculate_dynamic_market_price(all_stored, initial, target_config=target)
         stats.append({"name": name, "spec": "", "price": dyn_price})
         
-        # 2. 規格細分市價
-        specs = sorted(list(set([i.get("specification") for i in all_stored if i.get("specification")])))
-        for s in specs:
-            spec_price = analyzer.calculate_dynamic_market_price(all_stored, initial, s)
-            stats.append({"name": name, "spec": s, "price": spec_price})
+        # 2. 規格細分市價 (從 targets.yaml 定義的規格出發，加上資料庫已有的規格)
+        spec_set = set(t.get("spec_prices", {}).keys())
+        spec_set.update([i.get("specification") for i in all_stored if i.get("specification")])
+        # 取得收購價參考 (從資料庫優先，YAML 為輔)
+        db_stats = database.get_market_price_stats(target_name=name)
+        buyback_map = {} # spec -> max_price
+        for row in db_stats:
+            s_name = row['specification']
+            s_price = row['buyback_price']
+            if s_name not in buyback_map or s_price > buyback_map[s_name]:
+                buyback_map[s_name] = s_price
+        
+        # Fallback to YAML if DB is empty
+        yaml_buyback = t.get("buyback_prices", {})
+        for src, specs in yaml_buyback.items():
+            for s, p in specs.items():
+                if s not in buyback_map or p > buyback_map[s]:
+                    buyback_map[s] = p
+
+        for s in sorted(list(spec_set)):
+            spec_items = [item for item in all_stored if item.get("specification") == s]
+            spec_initial_price = t.get("spec_prices", {}).get(s, initial)
+            dynamic_price = analyzer.calculate_dynamic_market_price(spec_items, spec_initial_price, s, target_config=t)
+            stats.append({
+                "name": name,
+                "spec": s,
+                "market_price": round(dynamic_price),
+                "buyback_price": buyback_map.get(s, 0),
+                "count": len(spec_items),
+                "category": category
+            })
 
     if loop_ref and manager.active_connections:
         await manager.broadcast({"type": "market_stats", "data": stats})
@@ -388,94 +479,142 @@ def process_target(target):
 
 def _process_target_inner(target):
     name = target.get("name", "Unknown")
-    keyword = target.get("keyword")
+    keyword = target.get("keyword", target.get("name"))
     sort_by = str(target.get("sort_by", "3"))
     delay_range = target.get("delay_range", [3, 8])
     initial_market_price = float(target.get("market_price_estimate", 20000))
     dynamic_market_price = None  # 顯式初始化，預防任何 NameError
 
-    if name not in global_stats:
-        global_stats[name] = {"scraped": 0, "ignored": 0, "saved": 0}
+    # 統計數據 (也會同步到資料庫)
+    # 這裡的 global_stats 是累計的，不再按 target name 分開，因為 user 希望看到「總量」
 
     logger.info(f"== 開始並行偵測目標: {name} ==")
     items = scraper.fetch_carousell_items(keyword, sort_by=sort_by, delay_range=tuple(delay_range))
     
-    global_stats[name]["scraped"] += len(items)
+    global_stats["scraped"] += len(items)
+    database.update_cumulative_stats("total_scraped", len(items))
     
-    # 計算動態市價
-    all_stored_items = database.get_items(limit=300, target_name=name)
-    dynamic_market_price = analyzer.calculate_dynamic_market_price(all_stored_items, initial_market_price)
+    # 計算全體動態市價 (用於初步過濾)
+    all_stored_items = database.get_items(limit=300, target_name=name, include_read=True)
+    dynamic_market_price = analyzer.calculate_dynamic_market_price(all_stored_items, initial_market_price, target_config=target)
 
     for item in items:
         # 跳過已處理過的
         if database.deal_exists(item["id"]) or database.item_exists(item["id"]):
             continue
             
-        should_notify, status = analyzer.evaluate_item(item, config, target, dynamic_market_price)
+        # [關鍵優化]：在初步評估前，先用正則快速抓取規格，確保評估時用的基準價是對的
+        fast_spec = ai_evaluator.extract_spec_from_text(item["title"])
+        item["specification"] = fast_spec
+        # 取得該規格對應的收購價辭典 (從 DB 優先，YAML 為輔)
+        market_stats = database.get_market_price_stats(target_name=name)
+        buyback_prices = {}
+        for row in market_stats:
+            src = row['source']
+            s_name = row['specification']
+            s_price = row['buyback_price']
+            if src not in buyback_prices: buyback_prices[src] = {}
+            buyback_prices[src][s_name] = s_price
+            
+        yaml_buyback = target.get("buyback_prices", {})
+        for src, specs in yaml_buyback.items():
+            if src not in buyback_prices: buyback_prices[src] = {}
+            for s, p in specs.items():
+                if s not in buyback_prices[src]:
+                    buyback_prices[src][s] = p
+        
+        # 3. 初始評估 (計算門檻與初步過濾)
+        should_notify, status = analyzer.evaluate_item(
+            item, config, target, 
+            dynamic_market_price=dynamic_market_price,
+            buyback_prices=buyback_prices
+        )
         item["status"] = status
         item["target_name"] = name
         
-        # 存入一般市價庫 (只要不是完全 Ignored 就存，用於建立動態市價樣本)
+        # 只有當 status 是 Great Deal 或 Special 時，才啟動 AI 海選
+        if "Great Deal" in status or status == "Special":
+            logger.info(f"[{name}] 發現潛在超值商品: {item['title']}。啟動詳細抓取與 AI 審核...")
+            full_desc = scraper.fetch_item_details(item["url"])
+            
+            # 使用 AI 評估狀況 (不包含價格評分)
+            is_good_condition, is_parts, ai_reason, details = ai_evaluator.evaluate_deal(
+                item, full_desc, category=category,
+                user_prefs=config.get("trading", {}),
+                buyback_prices=buyback_prices
+            )
+            item.update(details) # 合併規格、地點、付款方式、摘要等
+            item["ai_reason"] = ai_reason
+            
+            # 存入資料庫
+            if is_parts:
+                database.insert_parts_deal(
+                    item["id"], item["title"], item["price"], item["url"], item["image_url"], 
+                    ai_reason, name, item.get("specification",""), item.get("location",""), item.get("payment",""),
+                    is_pickup_available=item.get("is_pickup_available", False),
+                    is_cod_available=item.get("is_cod_available", False),
+                    battery_health=item.get("battery_info", ""),
+                    ai_summary=item.get("ai_summary", ""),
+                    category=category
+                )
+                broadcast_new_item("parts", item)
+            elif is_good_condition:
+                global_stats["deals"] += 1
+                database.update_cumulative_stats("total_deals", 1)
+                database.insert_profitable_deal(
+                    item["id"], item["title"], item["price"], item["url"], item["image_url"], 
+                    ai_reason, name, item.get("specification",""), item.get("location",""), item.get("payment",""),
+                    is_pickup_available=item.get("is_pickup_available", False),
+                    is_cod_available=item.get("is_cod_available", False),
+                    battery_health=item.get("battery_info", ""),
+                    ai_summary=item.get("ai_summary", ""),
+                    category=category
+                )
+                notifier.send_telegram_message(config, item)
+                broadcast_new_item("deals", item)
+        
+        # 不論是否為 Deal，只要嚴格符合型號就存入一般庫 (Ignored 除外)
         if "Ignored" not in status:
-            global_stats[name]["saved"] += 1
+            global_stats["saved"] += 1
+            database.update_cumulative_stats("total_saved", 1)
             database.insert_item(
                 item_id=item["id"], title=item["title"], price=item["price"],
                 url=item["url"], image_url=item["image_url"], time_str=item["time"],
-                status=status, target_name=name
+                status=status, target_name=name, specification=item.get("specification", ""),
+                location=item.get("location", ""), payment=item.get("payment", ""),
+                is_pickup_available=item.get("is_pickup_available", False),
+                is_cod_available=item.get("is_cod_available", False),
+                battery_health=item.get("battery_info", ""),
+                ai_summary=item.get("ai_summary", ""),
+                category=category
             )
             broadcast_new_item("market", item)
-            
-            # 只有當 status 是 Great Deal 或 Special 時，才啟動 AI 海選
-            if status in ["Great Deal", "Special"]:
-                logger.info(f"[{name}] 發現潛在超值商品: {item['title']}。啟動詳細抓取與 AI 審核...")
-                full_desc = scraper.fetch_item_details(item["url"])
-                
-                # 取得使用者交易偏好
-                trading_prefs = config.get("trading", {})
-                is_good, is_parts, ai_reason, details = ai_evaluator.evaluate_deal(item, full_desc, trading_prefs)
-                
-                item.update(details) # 合併規格、地點、付款方式
-                item["ai_reason"] = ai_reason
-                
-                # 若 AI 抓到規格，重新計算該規格的動態市價以準確判斷
-                if details.get("specification"):
-                    spec_market_price = analyzer.calculate_dynamic_market_price(all_stored_items, initial_market_price, details["specification"])
-                    # 若價差不夠大，降級 status
-                    if item["price"] > (spec_market_price * config.get("analysis", {}).get("great_deal_threshold", 0.85)):
-                         is_good = False
-                         ai_reason = f"規格市價({details['specification']})不符套利門檻"
-                         item["status"] = "Market Item - Normal"
-                
-                if is_good:
-                    item["status"] = "Great Deal (AI)"
-                    database.insert_profitable_deal(
-                        item["id"], item["title"], item["price"], item["url"], item["image_url"], 
-                        ai_reason, name, item.get("specification",""), item.get("location",""), item.get("payment","")
-                    )
-                    notifier.send_telegram_message(config, item)
-                    broadcast_new_item("deals", item)
-                elif is_parts:
-                    item["status"] = "Parts Machine (AI)"
-                    database.insert_parts_deal(
-                        item["id"], item["title"], item["price"], item["url"], item["image_url"], 
-                        ai_reason, name, item.get("specification",""), item.get("location",""), item.get("payment","")
-                    )
-                    broadcast_new_item("parts", item)
-                else:
-                    logger.info(f"[{name}] AI 審核未通過: {ai_reason}")
-            elif "Market" in status:
-                # 即使不是 Deal，若 AI 先前有抓過規格，也存入規格資訊 (待優化：目前只有 Deal 會呼叫 AI)
-                database.insert_item(
-                    item["id"], item["title"], item["price"], item["url"], item["image_url"], 
-                    item["time"], status, name, item.get("specification",""), item.get("location",""), item.get("payment","")
-                )
-                broadcast_new_item("market", item)
-        else:
-            global_stats[name]["ignored"] += 1
-            
     # 背景廣播一次狀態更新，讓前端重整數據
     if loop_ref and manager.active_connections:
         asyncio.run_coroutine_threadsafe(manager.broadcast({"type": "stats_update"}), loop_ref)
+
+async def update_3c_prices():
+    """ 背景任務：從 3C 收購商官網抓取最新行情並存入資料庫 """
+    logger.info("開始更新 3C 收購行情...")
+    targets = load_targets()
+    for t in targets:
+        name = t.get("name")
+        buyback_urls = t.get("buyback_urls", {})
+        
+        # 遍歷不同來源 (SOGO3C, US3C 等)
+        for source, url in buyback_urls.items():
+            if not url: continue
+            
+            prices = {}
+            if "us3c" in url.lower():
+                prices = scraper.fetch_us3c_prices(url)
+            elif "sogo3c" in url.lower():
+                prices = scraper.fetch_sogo3c_prices(url)
+                
+            for spec, price in prices.items():
+                database.update_market_price_stats(name, spec, source, price)
+                
+    logger.info("3C 收購行情更新完成。")
 
 # === 6. 多線程排程系統 ===
 def job():
@@ -483,6 +622,9 @@ def job():
     # 每次執行前確保重新讀取最新配置
     targets_list = load_targets()
     config = load_config()
+    
+    # 定期更新 3C 行情 (在此處同步執行或非同步)
+    asyncio.run(update_3c_prices())
     
     logger.info(f"啟動排程任務，共 {len(targets_list)} 個目標。預計使用多線程平行掃描...")
     if loop_ref:
@@ -502,6 +644,9 @@ def job():
 def run_scheduler():
     job() # 立刻跑一次
     schedule.every(15).minutes.do(job)
+    # 額外排程：每 6 小時強制更新一次 3C 行情 (job 裡已經有跑了，這裡作為補強)
+    schedule.every(6).hours.do(lambda: asyncio.run(update_3c_prices()))
+    
     while True:
         schedule.run_pending()
         time.sleep(1)

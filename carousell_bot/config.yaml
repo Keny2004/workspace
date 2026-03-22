@@ -8,6 +8,7 @@ analysis:
   - 瑕疵
   - 報廢
   great_deal_threshold: 0.85
+  buyback_margin: 0.20
   market_price_estimate: 20000
   special_classification_keywords:
   - 微刮

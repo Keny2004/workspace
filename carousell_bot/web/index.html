@@ -39,6 +39,9 @@
                 <button class="tab-btn raw" data-tab="raw-db">
                     <span class="icon">🗄️</span> 原始數據庫檢視
                 </button>
+                <button class="tab-btn" data-tab="management">
+                    <span class="icon">⚙️</span> 系統運作管理
+                </button>
                 <button class="tab-btn logs" data-tab="logs">
                     <span class="icon">💻</span> 運行狀態監控
                 </button>
@@ -77,7 +80,55 @@
                 </div>
             </header>
 
-            <div class="content-wrapper">
+            <!-- 新增：規格快速切換器 (Visual Toggles) -->
+            <div id="spec-switch-container" class="spec-switcher hidden">
+                <!-- 由 JS 動態生成按鈕 -->
+            </div>
+
+
+            <!-- 分類過濾器 -->
+        <div class="category-filter-bar">
+            <div class="category-item active" data-category="all"><span>🏠</span> 全部</div>
+            <div class="category-item" data-category="phone"><span>📱</span> 手機</div>
+            <div class="category-item" data-category="tablet"><span>📟</span> 平板</div>
+            <div class="category-item" data-category="laptop"><span>💻</span> 筆電</div>
+        </div>
+
+        <div class="content-wrapper">
+                <!-- 系統儀表板 (Dashboard) -->
+                <div id="management-section" class="view-section hidden">
+                    <div class="dashboard-grid">
+                        <div class="dash-card">
+                            <div class="dash-icon">📊</div>
+                            <div class="dash-info">
+                                <label>累計掃描次數</label>
+                                <h1 id="dash-total-scraped">--</h1>
+                            </div>
+                        </div>
+                        <div class="dash-card">
+                            <div class="dash-icon">🎯</div>
+                            <div class="dash-info">
+                                <label>已分析資料量</label>
+                                <h1 id="dash-total-saved">--</h1>
+                            </div>
+                        </div>
+                        <div class="dash-card highlight">
+                            <div class="dash-icon">💎</div>
+                            <div class="dash-info">
+                                <label>超值機遇總計</label>
+                                <h1 id="dash-total-deals">--</h1>
+                            </div>
+                        </div>
+                        <div class="dash-card">
+                            <div class="dash-icon">💾</div>
+                            <div class="dash-info">
+                                <label>資料庫占用</label>
+                                <h1 id="dash-db-size">-- MB</h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 卡片區塊 -->
                 <div class="content-area view-section" id="items-grid"></div>
                 
@@ -113,10 +164,11 @@
                             <table id="targets-table">
                                 <thead>
                                     <tr>
-                                        <th>名稱</th>
-                                        <th>搜尋關鍵字</th>
-                                        <th>基準市價</th>
-                                        <th>操作</th>
+                                            <th>名稱</th>
+                                            <th>類別</th>
+                                            <th>搜尋關鍵字</th>
+                                            <th>基準市價</th>
+                                            <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="targets-tbody">

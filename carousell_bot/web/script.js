@@ -8,17 +8,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetFilter = document.getElementById('target-filter');
     const specFilter = document.getElementById('spec-filter');
     const tabBtns = document.querySelectorAll('.tab-btn');
-    const marketStatsContainer = document.getElementById('market-stats-container');
-    const statusText = document.getElementById('connection-status');
+    const specSwitcher = document.getElementById('spec-switch-container');
     
     let localDataCache = { 'deals': [], 'market': [], 'parts': [] };
+    let currentTab = 'deals'; // deals, market, parts, logs, management
+    let currentCategory = 'all'; // all, phone, tablet, laptop
     let localMarketStats = [];
     let knownTargets = new Set();
     let knownSpecs = new Set();
     let showRead = false;
-    let currentTab = 'deals'; 
     let hasFetchedInitial = false;
     
+    const refreshData = () => {
+        fetchInitialData();
+        fetchSystemStats();
+        fetchTargets();
+        renderUI();
+        renderMarketStats(localMarketStats);
+    };
+
+    // 分類過濾監聽
+    document.querySelectorAll('.category-item').forEach(item => {
+        item.addEventListener('click', () => {
+            document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            currentCategory = item.dataset.category;
+            refreshData();
+        });
+    });
+
     // WebSocket 處理
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
@@ -58,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (currentTarget && item.target_name !== currentTarget) return;
             if (currentSpec && item.specification !== currentSpec) return;
+            if (currentCategory !== 'all' && item.category !== currentCategory) return;
 
             if(localDataCache[msg.item_type]) {
                 localDataCache[msg.item_type].unshift(item);
@@ -77,13 +96,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    let hasFetchedInitial = false;
 
     const fetchInitialData = async () => {
         try {
             const target = targetFilter.value || '';
             const spec = specFilter.value || '';
-            const extra = `&include_read=${showRead}&target=${target}&spec=${spec}`;
+            const categoryParam = currentCategory !== 'all' ? `&category=${currentCategory}` : '';
+            const extra = `&include_read=${showRead}&target=${target}&spec=${spec}${categoryParam}`;
             
             const fetches = [
                 fetch(`/api/deals?limit=100${extra}`).then(res => res.json()).then(d => localDataCache['deals'] = d.data || []),
@@ -130,17 +149,69 @@ document.addEventListener('DOMContentLoaded', () => {
             opt.value = spec;
             opt.textContent = spec;
             specFilter.appendChild(opt);
+            
+            // 同步更新快速切換器
+            updateSpecSwitcher();
         }
+    }
+
+    const updateSpecSwitcher = () => {
+        const currentTarget = targetFilter.value;
+        if (!currentTarget) {
+            specSwitcher.classList.add('hidden');
+            return;
+        }
+
+        specSwitcher.classList.remove('hidden');
+        specSwitcher.innerHTML = '<span style="color:var(--text-sub); font-size:0.8rem; margin-right:10px;">快速切換：</span>';
+        
+        // 加上「全部」按鈕
+        const btnAll = document.createElement('button');
+        btnAll.className = `spec-btn ${specFilter.value === '' ? 'active' : ''}`;
+        btnAll.textContent = '全部';
+        btnAll.onclick = () => {
+            specFilter.value = '';
+            updateSpecSwitcher();
+            renderUI();
+            renderMarketStats(localMarketStats);
+        };
+        specSwitcher.appendChild(btnAll);
+
+        // 找出該目標有的規格 (從市價統計或快取中)
+        const targetSpecs = new Set();
+        localMarketStats.filter(s => s.name === currentTarget && s.spec).forEach(s => targetSpecs.add(s.spec));
+        
+        // 如果統計還沒出來，從現有資料撈
+        if (targetSpecs.size === 0) {
+            ['deals', 'market', 'parts'].forEach(k => {
+                localDataCache[k].filter(i => i.target_name === currentTarget && i.specification).forEach(i => targetSpecs.add(i.specification));
+            });
+        }
+
+        Array.from(targetSpecs).sort().forEach(spec => {
+            const btn = document.createElement('button');
+            btn.className = `spec-btn ${specFilter.value === spec ? 'active' : ''}`;
+            btn.textContent = spec;
+            btn.onclick = () => {
+                specFilter.value = spec;
+                updateSpecSwitcher();
+                renderUI();
+                renderMarketStats(localMarketStats);
+            };
+            specSwitcher.appendChild(btn);
+        });
     }
 
     // 預填寫常見規格以優化體驗
     ['128G', '256G', '512G', '1TB'].forEach(s => addKnownSpec(s));
     
     targetFilter.addEventListener('change', () => {
+        updateSpecSwitcher();
         fetchInitialData();
     });
 
     specFilter.addEventListener('change', () => {
+        updateSpecSwitcher();
         fetchInitialData();
     });
 
@@ -149,26 +220,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentTarget = targetFilter.value;
         const currentSpec = specFilter.value;
 
+        if (!stats || stats.length === 0) {
+            marketStatsContainer.innerHTML = '<div class="market-stat-item" style="border-left-color:#888;">尚未取得市價數據</div>';
+            return;
+        }
+
         // 如果選擇了特定目標，顯示該目標的所有規格市價
         if (currentTarget) {
-            const targetStats = stats.filter(s => s.name === currentTarget);
+            const targetStats = stats.filter(s => s.name === currentTarget && (currentCategory === 'all' || s.category === currentCategory));
+            if (targetStats.length === 0) {
+                marketStatsContainer.innerHTML = `<div class="market-stat-item" style="border-left-color:#888;">${currentTarget} 尚無統計</div>`;
+                return;
+            }
             targetStats.forEach(s => {
                 const el = document.createElement('div');
                 el.className = 'market-stat-item';
-                const label = s.spec ? `${s.name} (${s.spec})` : `${s.name} (總體)`;
-                const price = new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', maximumFractionDigits: 0 }).format(s.price);
-                el.innerHTML = `<strong>${label}</strong>: ${price}`;
-                if (currentSpec === s.spec) el.style.border = "1px solid var(--primary)";
+                const label = s.spec ? `📦 ${s.spec}` : `📊 總體平均`;
+                const price_val = s.market_price || s.price || 0;
+                const price = new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', maximumFractionDigits: 0 }).format(price_val);
+                
+                let buybackHtml = '';
+                if (s.buyback_price) {
+                    const bbPrice = new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', maximumFractionDigits: 0 }).format(s.buyback_price);
+                    buybackHtml = `<div style="font-size:0.75rem; color:#a78bfa; margin-top:4px;">💎 SOGO收購: ${bbPrice}</div>`;
+                }
+
+                el.innerHTML = `<strong>${label}</strong> ${price}${buybackHtml}`;
+                if (currentSpec === s.spec) {
+                    el.style.borderColor = "var(--primary)";
+                    el.style.background = "rgba(59, 130, 246, 0.1)";
+                }
                 marketStatsContainer.appendChild(el);
             });
         } else {
             // 顯示所有目標的總體市價
-            const generalStats = stats.filter(s => !s.spec);
+            const generalStats = stats.filter(s => !s.spec && (currentCategory === 'all' || s.category === currentCategory));
             generalStats.forEach(s => {
                 const el = document.createElement('div');
                 el.className = 'market-stat-item';
-                const price = new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', maximumFractionDigits: 0 }).format(s.price);
-                el.innerHTML = `<strong>${s.name}</strong> 基準市價: ${price}`;
+                const price_val = s.market_price || s.price || 0;
+                const price = new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', maximumFractionDigits: 0 }).format(price_val);
+                el.innerHTML = `<strong>${s.name}</strong> ${price}`;
                 marketStatsContainer.appendChild(el);
             });
         }
@@ -176,7 +268,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fetchSystemStats = async () => {
         try {
-            const res = await fetch('/api/system_stats');
+            const categoryParam = currentCategory !== 'all' ? `?category=${currentCategory}` : '';
+            const res = await fetch(`/api/system_stats${categoryParam}`);
             const data = await res.json();
             if (data.status === 'success') {
                 renderSystemStats(data.targets, data.stats);
@@ -248,6 +341,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        if (currentTab === 'manage' || currentTab === 'raw-db' || currentTab === 'logs') {
+            specSwitcher.classList.add('hidden');
+        } else if (targetFilter.value) {
+            specSwitcher.classList.remove('hidden');
+        }
+
         grid.classList.remove('hidden');
         grid.innerHTML = '';
         
@@ -260,6 +359,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if(currentSpec) {
              displayData = displayData.filter(i => i.specification === currentSpec);
+        }
+        if(currentCategory !== 'all') {
+            displayData = displayData.filter(i => i.category === currentCategory);
         }
         
         displayData.forEach(item => {
@@ -287,25 +389,60 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
             }
 
-            // 規格與交易資訊標籤
-            let tagsHtml = '<div class="tags-row" style="display:flex; gap:5px; flex-wrap:wrap; margin-top:8px;">';
-            if (item.specification) tagsHtml += `<span class="tag-badge spec">🏷️ ${item.specification}</span>`;
-            if (item.location) tagsHtml += `<span class="tag-badge loc">📍 ${item.location}</span>`;
-            if (item.payment) tagsHtml += `<span class="tag-badge pay">💳 ${item.payment}</span>`;
+            // 組合地點與面交資訊
+            let infoSecondary = '';
+            if (item.location || item.payment) {
+                const parts = [];
+                if (item.location) parts.push(`📍 ${item.location}`);
+                if (item.payment) parts.push(`🤝 ${item.payment}`);
+                infoSecondary = `<div class="item-info-secondary">${parts.join(' | ')}</div>`;
+            }
+
+            // 標籤列
+            let tagsHtml = '<div class="item-tags">';
+            if (item.specification) tagsHtml += `<span class="tag-badge spec">🔖 ${item.specification}</span>`;
+            if (item.is_pickup_available) tagsHtml += `<span class="tag-badge pickup">🛒 超商取貨 OK</span>`;
+            if (item.is_cod_available) tagsHtml += `<span class="tag-badge cod">💵 貨到付款 OK</span>`;
+            
+            // [新增] 收購價保底標籤 (若後端 status 包含 Arb-Ready)
+            if (item.status && item.status.includes('Arb-Ready')) {
+                tagsHtml += `<span class="tag-badge arb">💎 接近收購價!</span>`;
+            }
             tagsHtml += '</div>';
+
+            // AI 摘要區域
+            let aiContentHtml = '';
+            if (item.ai_summary) {
+                aiContentHtml = `<div class="ai-summary-box"><strong>🔍 AI 狀況總結：</strong>${item.ai_summary}</div>`;
+            } else if (item.ai_reason) {
+                aiContentHtml = `<div class="ai-reason-box"><strong>💡 套利理由：</strong>${item.ai_reason}</div>`;
+            }
+
+            // 電池健康度 (如有)
+            let batteryHtml = '';
+            if (item.battery_health) {
+                batteryHtml = `<span class="battery-health">🔋 ${item.battery_health}</span>`;
+            }
 
             const timeStr = item.created_at ? new Date(item.created_at + 'Z').toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'}) : item.time;
             
             const tableMap = { 'deals': 'profitable_deals', 'market': 'items', 'parts': 'parts_deals' };
             const currentTable = tableMap[currentTab];
 
+            // 根據類別顯示圖示
+            let categoryIcon = '📱';
+            if (item.category === 'tablet') categoryIcon = '📟';
+            else if (item.category === 'laptop') categoryIcon = '💻';
+
             card.innerHTML = `
+                <div class="item-category-icon">${categoryIcon}</div>
                 <div class="item-badge ${badgeClass}">${statusText}</div>
                 <div style="font-size:0.75rem; color:#888; margin-bottom:5px;">📁 ${item.target_name || '未分類'}</div>
-                <h3 class="item-title" title="${item.title}">${item.title}</h3>
+                <h3 class="item-title" title="${item.title}">${item.title}${batteryHtml}</h3>
                 <div class="item-price"><span></span>${priceFormatted}</div>
+                ${infoSecondary}
                 ${tagsHtml}
-                ${aiReasonHtml}
+                ${aiContentHtml}
                 <div class="item-time">紀錄時間: ${timeStr}</div>
                 <div style="display:flex; gap:10px; margin-top:12px;">
                     <a href="${item.url}" target="_blank" class="item-link" style="flex:2; margin:0;">前往拍賣 ↗</a>
@@ -330,6 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         allData.forEach(item => {
             if(filterName && item.target_name !== filterName) return;
+            if(currentCategory !== 'all' && item.category !== currentCategory) return;
             const tr = document.createElement('tr');
             const reason = item.ai_reason ? `<span style="color:#60a5fa">${item.ai_reason}</span>` : item.status;
             
@@ -371,7 +509,8 @@ document.addEventListener('DOMContentLoaded', () => {
         con.innerHTML = `正在請 Gemma3 分析 [${val}] 的最佳過濾關鍵字...\n這可能需要幾十秒，請稍候...`;
         
         try {
-            const res = await fetch('/api/generate_target', {
+            const categoryParam = currentCategory !== 'all' ? `&category=${currentCategory}` : '';
+            const res = await fetch(`/api/generate_target?${categoryParam}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({product_name: val})
@@ -454,7 +593,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 監控目標管理
     const fetchTargets = async () => {
         try {
-            const res = await fetch('/api/targets');
+            const categoryParam = currentCategory !== 'all' ? `?category=${currentCategory}` : '';
+            const res = await fetch(`/api/targets${categoryParam}`);
             const data = await res.json();
             if (data.status === 'success') {
                 renderTargetsTable(data.data);
@@ -470,9 +610,14 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.innerHTML = '';
         targets.forEach(t => {
             const tr = document.createElement('tr');
+            let catIcon = '📱';
+            if (t.category === 'tablet') catIcon = '📟';
+            else if (t.category === 'laptop') catIcon = '💻';
+
             tr.innerHTML = `
                 <td style="font-weight:bold;">${t.name}</td>
-                <td><code style="background:rgba(255,255,255,0.1); padding:2px 5px; border-radius:4px;">${t.keyword}</code></td>
+                <td style="text-align:center; font-size:1.2rem;">${catIcon}</td>
+                <td><code style="background:rgba(255,255,255,0.1); padding:2px 5px; border-radius:4px;">${t.keyword || t.name}</code></td>
                 <td>$${new Intl.NumberFormat('zh-TW').format(t.market_price_estimate)}</td>
                 <td>
                     <button class="delete-target-btn" data-name="${t.name}" style="background:#ef4444; border:none; border-radius:6px; color:white; padding:5px 10px; cursor:pointer; font-size:0.8rem;">🗑️ 刪除</button>
