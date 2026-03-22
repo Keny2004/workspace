@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carousell Monitor Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-area">
+                <div class="pulse-dot"></div>
+                <h1>Carousell AI Arb Platform</h1>
+            </div>
+            <div class="status-bar">
+                <span id="last-updated">Updating...</span>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="all">🤖 AI 認證套利庫 (AI Verified Deals)</button>
+            </div>
+
+            <div class="content-area">
+                <div id="loading" class="loading-spinner">Loading data from database...</div>
+                <div id="items-grid" class="items-grid">
+                    <!-- Items will be injected here via JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="/static/script.js"></script>
+</body>
+</html>

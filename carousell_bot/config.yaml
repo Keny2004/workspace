@@ -1,0 +1,31 @@
+# Telegram Bot Configuration
+telegram:
+  bot_token: ""           # Please fill in your Bot Token here
+  chat_id: ""             # Please fill in your Chat ID here
+
+# Search Target Configuration
+search:
+  keyword: "iPhone 14 Pro 128G"
+  sort_by: "3"       # Sorting criteria (often default to time in custom scrapers if URL supports it)
+  delay_range: [3, 8]     # Random delay between requests to avoid blocking (in seconds)
+
+# Price and Analysis Configuration
+analysis:
+  market_price_estimate: 20000  # Initial market price estimate for iPhone 14 Pro 128G
+  great_deal_threshold: 0.85    # Deals below 85% of market price will be notified
+  
+  blacklist_keywords:
+    - 壞
+    - 零件
+    - 不開機
+    - 鎖機
+    - 破裂
+    - 瑕疵
+    - 報廢
+
+  special_classification_keywords:
+    - 微刮
+    - 沒電
+    - 螢幕老化
+    - 電池健康度
+    - 功能正常
