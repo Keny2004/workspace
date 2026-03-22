@@ -1,49 +1,77 @@
-import logging
 import requests
-from typing import Dict, Any
+import logging
 
 logger = logging.getLogger(__name__)
 
-def send_telegram_message(config: Dict[str, Any], item: Dict[str, Any]) -> bool:
-    telegram_config = config.get("telegram", {})
-    bot_token = telegram_config.get("bot_token")
-    chat_id = telegram_config.get("chat_id")
+def send_telegram_message(config, item):
+    """
+    透過 Telegram Bot API 發送商品通知 (繁體中文介面)
+    """
+    token = config.get("telegram", {}).get("bot_token")
+    chat_id = config.get("telegram", {}).get("chat_id")
     
-    if not bot_token or not chat_id:
-        logger.warning("Telegram token or chat_id is missing. Not sending notification: %s", item.get('title'))
+    if not token or not chat_id:
+        logger.warning(f"Telegram token 或 chat_id 未設定。略過推播: {item['title']}")
         return False
         
-    status = item.get("status", "Normal Deal")
-    if status == "Great Deal":
-        flag = "🔥"
-        header = f"{flag} **[Great Deal] 發現低於市價的好物！**"
-    elif status == "Special":
-        flag = "⚠️"
-        header = f"{flag} **[Special] 發現低價微瑕疵商品，值得考慮！**"
-    else:
-        flag = "🔵"
-        header = f"{flag} **發現新商品**"
-        
-    message = (
-        f"{header}\n\n"
-        f"🏷️ 商品名稱：{item.get('title')}\n"
-        f"💰 售價：NT$ {item.get('price')}\n"
-        f"⏱️ 上架時間：{item.get('time')}\n\n"
-        f"🔗 連結：\n{item.get('url')}"
-    )
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
     
-    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    status_emoji = "🔥" if item.get("status") == "Great Deal" else "⚠️"
+    
+    # Check if it's a parts machine based on AI reason or status
+    if item.get("status") == "Parts Machine" or "零件" in item.get("status", ""):
+        status_emoji = "🛠️"
+        
+    status_display = {
+        "Great Deal": "推薦優惠 (AI 認證)",
+        "Special": "微瑕疵/特殊",
+        "Parts Machine": "零件/故障機"
+    }.get(item.get("status"), item.get("status"))
+    
+    message = f"""{status_emoji} <b>發現新套利目標！</b> {status_emoji}
+
+📌 <b>標題:</b> {item.get('title')}
+💰 <b>價格:</b> NT$ {item.get('price')}
+🏷️ <b>分類狀態:</b> {status_display}
+⏰ <b>發布時間:</b> {item.get('time')}
+
+🔗 <a href="{item.get('url')}">點此前往旋轉拍賣</a>
+"""
+    
     payload = {
         "chat_id": chat_id,
         "text": message,
+        "parse_mode": "HTML",
         "disable_web_page_preview": False
     }
     
     try:
         response = requests.post(url, json=payload, timeout=10)
         response.raise_for_status()
-        logger.info(f"Telegram notification sent for item: {item.get('id')} ({status})")
+        logger.info(f"Telegram 推播成功: {item['title']}")
         return True
     except Exception as e:
-        logger.error(f"Failed to send Telegram message for item {item.get('id')}: {e}")
+        logger.error(f"Telegram 推播失敗: {e}")
+        return False
+
+def send_telegram_system_message(config, message: str):
+    """
+    發送系統狀態通知 (如 Cloudflare 網址)
+    """
+    token = config.get("telegram", {}).get("bot_token")
+    chat_id = config.get("telegram", {}).get("chat_id")
+    
+    if not token or not chat_id:
+        return False
+        
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "HTML",
+    }
+    try:
+        requests.post(url, json=payload, timeout=10)
+        return True
+    except:
         return False

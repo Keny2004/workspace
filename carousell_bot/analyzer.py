@@ -1,96 +1,95 @@
 import logging
 import statistics
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional
 
 logger = logging.getLogger(__name__)
 
-def evaluate_item(item: Dict[str, Any], config: Dict[str, Any], target_config: Dict[str, Any], market_price_estimate: float) -> Tuple[bool, str]:
+def evaluate_item(item: Dict[str, Any], config: Dict[str, Any], target_config: Dict[str, Any], dynamic_market_price: Optional[float] = None) -> Tuple[bool, str]:
     """
     Evaluates an item to determine if it should be notified and its status.
     Returns: (should_notify: bool, status: str)
     """
     title = item.get("title", "").lower()
-    description = item.get("description", "").lower()
-    price = float(item.get("price", 0))
+    price = item.get("price", 0)
     
-    analysis_config = config.get("analysis", {})
-    threshold_ratio = float(analysis_config.get("great_deal_threshold", 0.85))
-    blacklist = [w.lower() for w in analysis_config.get("blacklist_keywords", [])]
-    special_words = [w.lower() for w in analysis_config.get("special_classification_keywords", [])]
+    # Check Required Keywords (MUST have all)
+    required_keywords = target_config.get("required_keywords", [])
+    if required_keywords and isinstance(required_keywords, list):
+        for req in required_keywords:
+            if req.lower() not in title:
+                return False, "Ignored - Missing Required Keyword"
+                
+    # Check Excluded Keywords (MUST NOT have any)
+    excluded_keywords = target_config.get("excluded_keywords", [])
+    if excluded_keywords and isinstance(excluded_keywords, list):
+        for exc in excluded_keywords:
+            if exc.lower() in title:
+                return False, "Ignored - Contains Excluded Keyword"
     
-    req_kw = [w.lower() for w in target_config.get("required_keywords", [])]
-    exc_kw = [w.lower() for w in target_config.get("excluded_keywords", [])]
-    
-    text_to_check = f"{title} {description}"
-    
-    # Check Required Keywords (MUST be in text_to_check)
-    for word in req_kw:
-        if word not in text_to_check:
-            logger.debug(f"Item '{title}' skipped: missing required keyword '{word}'")
-            return False, "Ignored - Missing Required Target Keyword"
+    # 全域黑名單檢查 (如配件、假機等)
+    blacklist = config.get("analysis", {}).get("blacklist_keywords", [])
+    for keyword in blacklist:
+        if keyword.lower() in title:
+            return False, "Ignored - Blacklisted"
             
-    # Check Excluded Keywords (MUST NOT be in text_to_check)
-    for word in exc_kw:
-        if word in text_to_check:
-            logger.debug(f"Item '{title}' skipped: contains excluded keyword '{word}'")
-            return False, "Ignored - Target Excluded Keyword"
+    # 如果抓不到價格，直接忽略
+    if price <= 0:
+        return False, "Ignored - Zero Price"
+        
+    market_price = dynamic_market_price if dynamic_market_price else target_config.get("market_price_estimate", 0)
+    threshold = config.get("analysis", {}).get("great_deal_threshold", 0.85)
     
-    # 1. Strict blacklist
-    for word in blacklist:
-        if word in text_to_check:
-            logger.debug(f"Item '{title}' skipped due to strict blacklist keyword: {word}")
-            return False, "Ignored - Global Blacklist"
-            
-    # Sub-filter: Ridiculously low price usually means scam, cases, boxes, or dummy listing
-    if price < market_price_estimate * 0.3:
-         logger.debug(f"Item '{title}' skipped: price suspiciously low ({price} vs {market_price_estimate}). Might be an accessory.")
-         return False, "Ignored - Suspiciously Cheap"
-         
-    # 2. Check special keywords
-    is_special = False
-    for word in special_words:
-        if word in text_to_check:
-            is_special = True
-            break
-            
-    # 3. Evaluate price
-    great_deal_price = market_price_estimate * threshold_ratio
-    very_cheap_price = market_price_estimate * 0.70
+    # 理論上真正的超低價不可能低於市價 30% (除非是賣空盒或惡搞)
+    # 如果太貴，標記為高價市價
+    if price > (market_price * 1.5):
+        return False, "Ignored - Way Overpriced"
+        
+    if price > (market_price * 1.15):
+        return False, "Market Item - High"
+        
+    # 特殊微瑕疵關鍵字檢查
+    special_keywords = config.get("analysis", {}).get("special_classification_keywords", [])
+    is_special = any(kw.lower() in title for kw in special_keywords)
     
-    if price <= great_deal_price:
+    if price <= (market_price * threshold):
         if is_special:
-            if price <= very_cheap_price:
-                return True, "Special"
-            else:
-                return False, "Special (Not Cheap Enough)"
+            return True, "Special" # 需要 AI 介入
         else:
-            return True, "Great Deal"
+            return True, "Great Deal" # 需要 AI 介入
             
-    # Avoid recording or showing completely overpriced items
-    if price > market_price_estimate * 1.15:
-        return False, "Ignored - Overpriced"
-        
-    return False, "Normal Deal"
+    return False, "Market Item - Normal" # 普通市價，僅存入庫中不推播
 
-def calculate_dynamic_market_price(items: list, default_price: float) -> float:
+def calculate_dynamic_market_price(items_history, initial_estimate, specification: str = ""):
     """
-    Calculate median market price dynamically with IQR outlier removal.
+    利用 IQR 四分位距法排除極端值後計算市場價格的中位數。
+    若帶有規格 (specification)，則優先計算該規格的市價。
     """
-    valid_prices = [i['price'] for i in items if i['status'] in ('Normal Deal', 'Great Deal') and i['price'] > default_price * 0.4]
-    if len(valid_prices) < 5:
-        return default_price
+    if specification:
+        # 過濾出特定規格的商品
+        spec_items = [item for item in items_history if item.get('specification') == specification]
+        if len(spec_items) >= 5:
+            return _calculate_median_with_iqr(spec_items, initial_estimate)
+            
+    # 若規格資料不足或未提供規格，則計算全體中位數
+    return _calculate_median_with_iqr(items_history, initial_estimate)
+
+def _calculate_median_with_iqr(items, initial_estimate):
+    if not items or len(items) < 5:
+        return initial_estimate
         
-    # Validations & Outlier elimination using Interquartile Range (IQR) algorithm
-    valid_prices.sort()
-    n = len(valid_prices)
-    q1 = valid_prices[n // 4]
-    q3 = valid_prices[(3 * n) // 4]
+    prices = [item['price'] for item in items if item['price'] > 0]
+    prices.sort()
+    
+    n = len(prices)
+    q1 = prices[n // 4]
+    q3 = prices[(3 * n) // 4]
     iqr = q3 - q1
+    
     lower_bound = q1 - 1.5 * iqr
     upper_bound = q3 + 1.5 * iqr
     
-    filtered_prices = [p for p in valid_prices if lower_bound <= p <= upper_bound]
+    filtered_prices = [p for p in prices if lower_bound <= p <= upper_bound]
     if not filtered_prices:
-        filtered_prices = valid_prices
+        return initial_estimate
         
     return statistics.median(filtered_prices)

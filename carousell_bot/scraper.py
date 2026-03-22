@@ -1,120 +1,132 @@
-import logging
+from curl_cffi import requests as cffi_requests
 from bs4 import BeautifulSoup
-from curl_cffi import requests
-from urllib.parse import quote
-import random
-import time
 import re
-from typing import List, Dict, Any
+import urllib.parse
+import time
+import random
+import logging
 
 logger = logging.getLogger(__name__)
 
 USER_AGENTS = [
-    "chrome110", "chrome104", "edge101", "safari15_3", "safari15_5", "chrome120"
+    "chrome110", "edge99", "safari15_3"
 ]
 
-def fetch_carousell_items(keyword: str, sort_by: str = "3", delay_range: tuple = (3, 8)) -> List[Dict[str, Any]]:
-    url = f"https://tw.carousell.com/search/{quote(keyword)}?sort_by={sort_by}"
-    logger.info(f"Fetching Carousell url: {url}")
+def fetch_carousell_items(keyword: str, sort_by: str = "3", delay_range: tuple = (3, 8)):
+    """
+    利用 curl_cffi 繞過 Cloudflare 防護，抓取旋轉拍賣商品列表
+    sort_by: 3=最新
+    """
+    encoded_keyword = urllib.parse.quote(keyword)
+    url = f"https://tw.carousell.com/search/{encoded_keyword}?sort_by={sort_by}"
     
-    # Anti-bot delay
+    logger.info(f"正在抓取列表網址: {url}")
+    
     delay = random.uniform(delay_range[0], delay_range[1])
-    logger.debug(f"Sleeping for {delay:.2f} seconds...")
     time.sleep(delay)
     
     impersonate = random.choice(USER_AGENTS)
+    
     try:
-        response = requests.get(url, impersonate=impersonate, timeout=15)
+        response = cffi_requests.get(url, impersonate=impersonate, timeout=15)
         response.raise_for_status()
     except Exception as e:
-        logger.error(f"Error fetching data from Carousell: {e}")
+        logger.error(f"抓取旋轉拍賣列表失敗: {e}")
         return []
-        
+
     soup = BeautifulSoup(response.text, 'html.parser')
-    cards = soup.find_all('a', href=re.compile(r'^/p/.*'))
+    
+    # 尋找所有商品區塊
+    product_cards = soup.find_all('div', attrs={'data-testid': re.compile(r'^listing-card-')})
     
     items = []
-    for card in cards:
-        href = card.get('href')
-        if not href: continue
-        
-        # Extract ID
-        match = re.search(r'-(\d+)/\?', href) or re.search(r'-(\d+)/?$', href)
-        if not match:
-            continue
-        item_id = match.group(1)
-            
-        full_url = f"https://tw.carousell.com{href}"
-        
-        # The text structure typically is Name \n Price \n Condition ...
-        texts = list(card.stripped_strings)
-        if len(texts) < 2:
-            continue
-            
-        title = texts[0]
-        price_str = ""
-        for t in texts:
-            if 'NT$' in t:
-                price_str = t
-                break
-                
-        if not price_str:
-            continue
-            
+    for card in product_cards:
         try:
-            price = int(re.sub(r'[^\d]', '', price_str))
-        except ValueError:
-            price = 0
+            # 精準挑選商品連結 (排除賣家個人首頁連結)
+            product_link = card.find('a', href=re.compile(r'^/p/'))
+            if not product_link:
+                # 備案：如果找不到帶 /p/ 的，再退而求其次找第一個有標題屬性的 a
+                product_link = card.find('a', href=True)
+                if not product_link: continue
             
-        # Try extracting image
-        img_tag = card.find('img')
-        image_url = img_tag.get('src') if img_tag else ""
-        
-        # In Taiwan Carousell search, time is not always visible on card, set to newest
-        items.append({
-            "id": str(item_id),
-            "title": title,
-            "price": price,
-            "url": full_url,
-            "image_url": image_url,
-            "description": "", # Details require fetching individual page
-            "time": "剛剛" # Approximate for newest sorting
-        })
-        
-    logger.info(f"Scraped {len(items)} items from Carousell")
+            relative_url = product_link.get('href')
+            full_url = f"https://tw.carousell.com{relative_url}"
+            
+            # 抓取圖片網址與堅固的標題
+            img_tag = card.find('img')
+            image_url = img_tag.get('src') if img_tag else ""
+            
+            title = "無標題"
+            if img_tag and (img_tag.get('title') or img_tag.get('alt')):
+                title = img_tag.get('title') or img_tag.get('alt')
+            else:
+                title_p = card.find('p', style=re.compile(r'-webkit-line-clamp:\s*2'))
+                if title_p:
+                    title = title_p.text.strip()
+                elif len(card.find_all('p')) > 2:
+                    title = card.find_all('p')[2].text.strip()
+            
+            # 抓取價格
+            price_p = card.find('p', string=re.compile(r'NT\$'))
+            price_str = price_p.text.strip() if price_p else "NT$ 0"
+            price = int(re.sub(r'[^\d]', '', price_str))
+            
+            # 抓取上架時間
+            time_node = card.find('p', string=re.compile(r'(分鐘|小時|天|剛剛|昨天)'))
+            time_str = time_node.text.strip() if time_node else "未知"
+            
+            # 提取商品ID (從網址擷取)
+            url_parts = relative_url.split('/')
+            parts_filtered = [p for p in url_parts if p]
+            # ID 通常在最後一個區段的結尾，例如 -123456789
+            item_id = ""
+            if len(parts_filtered) > 1:
+                id_match = re.search(r'-(\d+)\/?$', parts_filtered[1])
+                if id_match:
+                    item_id = id_match.group(1)
+            
+            if not item_id:
+                item_id = str(hash(full_url))
+                
+            items.append({
+                "id": item_id,
+                "title": title,
+                "price": price,
+                "url": full_url,
+                "image_url": image_url,
+                "time": time_str
+            })
+        except Exception as e:
+            logger.debug(f"解析單一商品失敗，略過: {e}")
+            continue
+            
+    logger.info(f"成功從旋轉拍賣抓取了 {len(items)} 筆商品 (關鍵字: {keyword})")
     return items
 
 def fetch_item_details(url: str, delay_range: tuple = (2, 5)) -> str:
     """
-    Fetches the specific item page and extracts its full description.
+    抓取特定商品的深層詳細頁面，取得完整描述文字。
     """
-    logger.info(f"Deep scraping details for: {url}")
+    logger.info(f"正在深層爬取商品詳細內文: {url}")
     delay = random.uniform(delay_range[0], delay_range[1])
     time.sleep(delay)
     
     impersonate = random.choice(USER_AGENTS)
     try:
-        response = requests.get(url, impersonate=impersonate, timeout=15)
+        response = cffi_requests.get(url, impersonate=impersonate, timeout=15)
         response.raise_for_status()
     except Exception as e:
-        logger.error(f"Error fetching item details {url}: {e}")
+        logger.error(f"深層抓取商品外連失敗 {url}: {e}")
         return ""
         
     soup = BeautifulSoup(response.text, 'html.parser')
     
-    # Attempt to locate Carousell's description specific div
+    # 嘗試抓取旋轉拍賣的新版內文 div
     desc_node = soup.find('div', attrs={'data-testid': 'listing-page-text-description'})
     if desc_node:
         return desc_node.get_text('\n', strip=True)
     
-    # Fallback: search across all paragraphs
+    # 備案：大海撈針抓取 P 段落
     paragraphs = soup.find_all('p')
-    # Filter short paragraphs that are likely UI text
     desc_lines = [p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 20]
     return "\n".join(desc_lines)
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    items = fetch_carousell_items("iPhone 14 Pro 128G")
-    for item in items[:3]:
-        print(item)
