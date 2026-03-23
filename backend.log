@@ -429,3 +429,24 @@ INFO:     127.0.0.1:62658 - "GET /api/products?show_all=true&limit=100&offset=0 
 2026-03-23 12:40:28,043 - Scheduler - INFO - Enriched 0 items with detailed metadata.
 2026-03-23 12:40:28,043 - apscheduler.executors.default - INFO - Job "SchedulerService.run_ai_predictions (trigger: interval[1:00:00], next run at: 2026-03-23 13:40:27 CST)" executed successfully
 2026-03-23 12:40:28,043 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_metadata_enrichment (trigger: interval[0:30:00], next run at: 2026-03-23 13:10:27 CST)" executed successfully
+2026-03-23 12:55:27,985 - apscheduler.executors.default - INFO - Running job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 13:10:27 CST)" (scheduled at 2026-03-23 12:55:27.973208+08:00)
+2026-03-23 12:55:28,013 - Scheduler - INFO - Crawling paused or in 403 backoff by system.
+2026-03-23 12:55:28,014 - apscheduler.executors.default - INFO - Job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 13:10:27 CST)" executed successfully
+2026-03-23 13:00:27,982 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_missing_summaries (trigger: interval[0:20:00], next run at: 2026-03-23 13:20:27 CST)" (scheduled at 2026-03-23 13:00:27.973348+08:00)
+2026-03-23 13:00:27,986 - Scheduler - INFO - Starting AI Summary Sweep...
+2026-03-23 13:00:28,005 - Scheduler - INFO - Processed 0 missing AI summaries.
+2026-03-23 13:00:28,005 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_missing_summaries (trigger: interval[0:20:00], next run at: 2026-03-23 13:20:27 CST)" executed successfully
+2026-03-23 13:10:27,989 - apscheduler.executors.default - INFO - Running job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 13:25:27 CST)" (scheduled at 2026-03-23 13:10:27.973208+08:00)
+2026-03-23 13:10:27,993 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_metadata_enrichment (trigger: interval[0:30:00], next run at: 2026-03-23 13:40:27 CST)" (scheduled at 2026-03-23 13:10:27.973394+08:00)
+2026-03-23 13:10:28,002 - Scheduler - INFO - Starting Metadata Enrichment Sweep...
+2026-03-23 13:10:28,006 - Scheduler - INFO - Crawling paused or in 403 backoff by system.
+2026-03-23 13:10:28,007 - apscheduler.executors.default - INFO - Job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 13:25:27 CST)" executed successfully
+2026-03-23 13:10:28,007 - Scheduler - INFO - Enriched 0 items with detailed metadata.
+2026-03-23 13:10:28,007 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_metadata_enrichment (trigger: interval[0:30:00], next run at: 2026-03-23 13:40:27 CST)" executed successfully
+2026-03-23 13:20:27,989 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_missing_summaries (trigger: interval[0:20:00], next run at: 2026-03-23 13:40:27 CST)" (scheduled at 2026-03-23 13:20:27.973348+08:00)
+2026-03-23 13:20:27,993 - Scheduler - INFO - Starting AI Summary Sweep...
+2026-03-23 13:20:28,006 - Scheduler - INFO - Processed 0 missing AI summaries.
+2026-03-23 13:20:28,007 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_missing_summaries (trigger: interval[0:20:00], next run at: 2026-03-23 13:40:27 CST)" executed successfully
+2026-03-23 13:25:27,985 - apscheduler.executors.default - INFO - Running job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 13:40:27 CST)" (scheduled at 2026-03-23 13:25:27.973208+08:00)
+2026-03-23 13:25:27,998 - Scheduler - INFO - Crawling paused or in 403 backoff by system.
+2026-03-23 13:25:27,998 - apscheduler.executors.default - INFO - Job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 13:40:27 CST)" executed successfully
