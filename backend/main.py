@@ -10,7 +10,7 @@ import json
 import os
 
 import datetime
-from .database import get_db, init_db
+from .database import get_db, init_db, SessionLocal
 from . import models
 from .services.scheduler import SchedulerService
 
@@ -116,12 +116,24 @@ async def websocket_logs(websocket: WebSocket):
         await websocket.close()
 
 @app.get("/api/products")
-def get_products(is_potential: bool = False, db: Session = Depends(get_db)):
+def get_products(is_potential: bool = False, show_ignored: bool = False, show_all: bool = False, limit: int = 100, offset: int = 0, db: Session = Depends(get_db)):
     query = db.query(models.ScrapedProduct)
-    if is_potential:
-        query = query.filter(models.ScrapedProduct.is_potential_profit == True)
     
-    products = query.order_by(models.ScrapedProduct.scraped_at.desc()).all()
+    if show_all:
+        pass # Return everything
+    elif show_ignored:
+        # Show items that are either not potential profit OR are explicitly ignored by user
+        query = query.filter(
+            (models.ScrapedProduct.is_potential_profit == False) | 
+            (models.ScrapedProduct.is_ignored_by_user == True)
+        )
+    else:
+        # Normal flow: completely hide ignored items
+        query = query.filter(models.ScrapedProduct.is_ignored_by_user == False)
+        if is_potential:
+            query = query.filter(models.ScrapedProduct.is_potential_profit == True)
+    
+    products = query.order_by(models.ScrapedProduct.scraped_at.desc()).offset(offset).limit(limit).all()
     
     result = []
     for p in products:
@@ -198,15 +210,73 @@ def get_stats(db: Session = Depends(get_db)):
 def delete_product(product_id: int, db: Session = Depends(get_db)):
     product = db.query(models.ScrapedProduct).filter(models.ScrapedProduct.id == product_id).first()
     if product:
-        db.delete(product)
+        # Soft delete: mark as ignored instead of removing from DB
+        product.is_ignored_by_user = True
+        product.is_potential_profit = False
         db.commit()
     return {"status": "success"}
+
+@app.post("/api/products/{product_id}/refresh-ai")
+def refresh_product_ai(product_id: int, db: Session = Depends(get_db)):
+    from .services.product_service import ProductService
+    product = db.query(models.ScrapedProduct).filter(models.ScrapedProduct.id == product_id).first()
+    if not product:
+        return {"status": "error", "message": "Product not found"}
+        
+    spec = product.specification
+    if not spec:
+        return {"status": "error", "message": "No specification linked"}
+        
+    ps = ProductService(db)
+    
+    benchmark = db.query(models.MarketPrice).filter(
+        models.MarketPrice.specification_id == spec.id
+    ).order_by(models.MarketPrice.updated_at.desc()).first()
+    benchmark_price = benchmark.price if benchmark else 0
+    
+    profit_percent_str = ps.get_config(f"profit_margin", "30")
+    if spec.model and spec.model.category:
+        profit_percent_str = ps.get_config(f"profit_margin_{spec.model.category.name}", "30")
+    try:
+        profit_margin_percent = float(profit_percent_str)
+    except:
+        profit_margin_percent = 30.0
+
+    summary = ps.validate_and_summarize_with_ai(product, benchmark_price, profit_margin_percent)
+    if summary or summary == "":
+        return {
+            "status": "success", 
+            "ai_summary": product.ai_summary, 
+            "is_potential_profit": product.is_potential_profit, 
+            "is_faulty": product.is_faulty
+        }
+    else:
+        return {"status": "error", "message": "Failed to generate summary or product excluded by AI"}
+
+@app.post("/api/products/refresh-all-ai")
+def refresh_all_products_ai():
+    import threading
+    def background_refresh():
+        db = SessionLocal()
+        try:
+            from .services.product_service import ProductService
+            ps = ProductService(db)
+            ps.refresh_all_recommended_ai(check_abort=lambda: scheduler.is_paused or not scheduler.is_ai_running)
+        except Exception as e:
+            print(f"Background refresh all AI failed: {e}")
+        finally:
+            db.close()
+    
+    threading.Thread(target=background_refresh, daemon=True).start()
+    return {"status": "started", "message": "Global AI refresh started in background"}
 
 @app.get("/api/market-predictions")
 def get_market_predictions(db: Session = Depends(get_db)):
     from .models import MarketPrediction, Specification
     from sqlalchemy.orm import joinedload
-    predictions = db.query(MarketPrediction).options(joinedload(MarketPrediction.specification)).all()
+    predictions = db.query(MarketPrediction).options(
+        joinedload(MarketPrediction.specification).joinedload(Specification.model)
+    ).all()
     # Add manual price from specification to the response
     results = []
     import json
@@ -217,15 +287,19 @@ def get_market_predictions(db: Session = Depends(get_db)):
                 ai_data = json.loads(p.ai_analysis)
             except:
                 ai_data = None
+        
+        # Get manual price from associated market prices
+        manual_price = next((mp.price for mp in p.specification.market_prices if mp.source == "Manual"), 0)
                 
         results.append({
             "id": p.id,
             "specification_id": p.specification_id,
+            "model_name": p.specification.model.name if p.specification.model else "Unknown",
             "specification_name": p.specification.name,
             "predicted_price": p.predicted_price,
             "sample_size": p.sample_size,
             "updated_at": p.updated_at,
-            "user_manual_price": p.specification.user_manual_price,
+            "user_manual_price": manual_price,
             "ai_analysis": ai_data
         })
     return results
@@ -252,7 +326,8 @@ def get_categories(db: Session = Depends(get_db)):
                     "id": spec.id,
                     "name": spec.name,
                     "is_monitored": spec.is_monitored,
-                    "custom_margin": spec.custom_margin
+                    "custom_margin": spec.custom_margin,
+                    "recommend_faulty": spec.recommend_faulty
                 })
             cat_dict["models"].append(model_dict)
         results.append(cat_dict)
@@ -314,6 +389,11 @@ def pause_crawl():
 def resume_crawl():
     scheduler.is_paused = False
     return {"status": "resumed"}
+
+@app.post("/api/system/stop-all")
+def stop_all_services():
+    scheduler.stop_all()
+    return {"status": "stopped", "message": "All background services have been halted."}
 
 # --- Category Management ---
 @app.post("/api/categories")
@@ -430,7 +510,8 @@ def get_all_market_prices(db: Session = Depends(get_db)):
                 "source": p.source or "Unknown",
                 "updated_at": p.updated_at,
                 "is_monitored": spec.is_monitored,
-                "custom_margin": spec.custom_margin
+                "custom_margin": spec.custom_margin,
+                "recommend_faulty": spec.recommend_faulty
             })
             
     return latest_prices
@@ -452,6 +533,7 @@ def toggle_monitor(spec_id: int, db: Session = Depends(get_db)):
 class SpecificationUpdateRequest(BaseModel):
     custom_margin: Optional[float] = None
     is_monitored: Optional[bool] = None
+    recommend_faulty: Optional[bool] = None
 
 @app.patch("/api/specifications/{spec_id}")
 def update_specification(spec_id: int, req: SpecificationUpdateRequest, db: Session = Depends(get_db)):
@@ -463,6 +545,8 @@ def update_specification(spec_id: int, req: SpecificationUpdateRequest, db: Sess
         spec.custom_margin = req.custom_margin
     if req.is_monitored is not None:
         spec.is_monitored = req.is_monitored
+    if req.recommend_faulty is not None:
+        spec.recommend_faulty = req.recommend_faulty
         
     db.commit()
     return {"status": "success"}
@@ -477,6 +561,59 @@ class ManualPriceRequest(BaseModel):
     specification: str
     price: float
     custom_margin: Optional[float] = None
+
+@app.get("/api/admin/db-cleanup/preview")
+def cleanup_database_preview(db: Session = Depends(get_db)):
+    """
+    Simulate intensive cleanup and return expected stats.
+    """
+    stats = {"models_merged": 0, "specs_merged": 0, "prices_cleaned": 0, "products_cleaned": 0}
+    
+    # 1. Merge ProductModels
+    categories = db.query(models.Category).all()
+    for cat in categories:
+        model_groups = {}
+        for m in cat.models:
+            name = m.name.strip().lower()
+            if name not in model_groups: model_groups[name] = []
+            model_groups[name].append(m)
+        for m_list in model_groups.values():
+            if len(m_list) > 1:
+                stats["models_merged"] += len(m_list) - 1
+
+    # 2. Merge Specifications
+    all_models = db.query(models.ProductModel).all()
+    for m in all_models:
+        spec_groups = {}
+        for s in m.specifications:
+            name = s.name.strip().lower()
+            if name not in spec_groups: spec_groups[name] = []
+            spec_groups[name].append(s)
+        for s_list in spec_groups.values():
+            if len(s_list) > 1:
+                stats["specs_merged"] += len(s_list) - 1
+
+    # 3. Deduplicate MarketPrices
+    all_prices = db.query(models.MarketPrice).order_by(models.MarketPrice.updated_at.desc()).all()
+    seen_prices = set()
+    for p in all_prices:
+        key = (p.specification_id, (p.source or "Unknown").strip())
+        if key in seen_prices:
+            stats["prices_cleaned"] += 1
+        else:
+            seen_prices.add(key)
+
+    # 4. Deduplicate ScrapedProducts
+    all_prods = db.query(models.ScrapedProduct).order_by(models.ScrapedProduct.scraped_at.desc()).all()
+    seen_prods = set()
+    for p in all_prods:
+        key = (p.external_id, p.platform)
+        if key in seen_prods:
+            stats["products_cleaned"] += 1
+        else:
+            seen_prods.add(key)
+
+    return {"status": "success", "stats": stats}
 
 @app.post("/api/admin/db-cleanup")
 def cleanup_database(db: Session = Depends(get_db)):

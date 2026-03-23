@@ -6,11 +6,42 @@ const DataExplorer = () => {
     const [products, setProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterPlatform, setFilterPlatform] = useState("All");
+    const [filterStatus, setFilterStatus] = useState("all");
     const [minProfit, setMinProfit] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
     
+    const loadMore = React.useCallback(() => {
+        if (loading || !hasMore) return;
+        setLoading(true);
+        axios.get(`/api/products?show_all=true&limit=100&offset=${page * 100}`).then(res => {
+            if (res.data.length < 100) setHasMore(false);
+            setProducts(prev => {
+                const existingIds = new Set(prev.map(p => p.id));
+                const newProducts = res.data.filter(p => !existingIds.has(p.id));
+                return [...prev, ...newProducts];
+            });
+            setPage(p => p + 1);
+            setLoading(false);
+        }).catch(() => setLoading(false));
+    }, [page, loading, hasMore]);
+
     useEffect(() => {
-        axios.get('/api/products').then(res => setProducts(res.data));
+        loadMore();
     }, []);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 200) {
+                if (!loading && hasMore) {
+                    loadMore();
+                }
+            }
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [loading, hasMore, loadMore]);
 
     const handleDelete = async (id) => {
         if (window.confirm("確定要刪除此筆推薦嗎？")) {
@@ -26,7 +57,10 @@ const DataExplorer = () => {
         const matchesPlatform = filterPlatform === "All" || p.platform === filterPlatform;
         const profit_val = p.estimated_profit || 0;
         const matchesProfit = profit_val >= minProfit;
-        return matchesSearch && matchesPlatform && matchesProfit;
+        const matchesStatus = filterStatus === "all" || 
+            (filterStatus === "potential" && p.is_potential_profit && !p.is_ignored_by_user) || 
+            (filterStatus === "discarded" && (!p.is_potential_profit || p.is_ignored_by_user));
+        return matchesSearch && matchesPlatform && matchesProfit && matchesStatus;
     });
 
     // ... (rest of the code remains similar, update table rows)
@@ -85,6 +119,16 @@ const DataExplorer = () => {
                 >
                     <option value="All">-- ALL_NODES --</option>
                     <option value="Carousell">CAROUSELL</option>
+                    <option value="Yahoo Auction">YAHOO_AUCTION</option>
+                </select>
+                <select 
+                  className="bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-cyan-500/50 transition-all font-black text-[10px] uppercase tracking-widest text-cyan-500/70 appearance-none shadow-inner min-w-[150px]"
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                >
+                    <option value="all">-- ALL_STATUS --</option>
+                    <option value="potential">高潛力推薦 (POTENTIAL)</option>
+                    <option value="discarded">已被過濾/忽略 (DISCARDED)</option>
                 </select>
                 <div className="flex items-center gap-3 bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 focus-within:border-cyan-500/50 transition-all group">
                     <span className="text-gray-600 text-[10px] font-black uppercase tracking-widest px-1">MIN_PROFIT_ROI:</span>
@@ -197,11 +241,17 @@ const DataExplorer = () => {
                     </table>
                 </div>
                 
-                {filteredProducts.length === 0 && (
+                {filteredProducts.length === 0 && !loading && (
                     <div className="py-32 flex flex-col items-center justify-center text-gray-700 font-black italic text-[10px] uppercase opacity-20 tracking-[0.5em] gap-6">
                         <Monitor size={80} className="animate-float" />
                         <span>No_Match_Found // Re-Index_Filters</span>
                     </div>
+                )}
+                
+                {loading && (
+                     <div className="py-12 flex justify-center w-full">
+                         <Zap size={24} className="animate-pulse text-cyan-500 opacity-50" />
+                     </div>
                 )}
             </div>
         </div>

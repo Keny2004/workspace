@@ -30,13 +30,24 @@ const AIPredictions = () => {
                 <div className="flex gap-4 items-center">
                     <button 
                         onClick={() => {
-                          axios.post('/api/ai/predict/trigger');
-                          setTimeout(fetchPredictions, 3000); // refresh after brief delay
+                          if (loading) return;
+                          setLoading(true);
+                          axios.post('/api/ai/predict/trigger')
+                            .then(() => {
+                                // Show a temporary "started" state
+                                console.log("Prediction task started");
+                                setTimeout(fetchPredictions, 3000);
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                setLoading(false);
+                            });
                         }}
-                        className="flex items-center gap-2 bg-cyan-600/20 text-cyan-400 border border-cyan-500/50 hover:bg-cyan-600 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,243,255,0.2)] active:scale-95 cyber-button flex-shrink-0"
+                        disabled={loading}
+                        className={`flex items-center gap-2 bg-cyan-600/20 text-cyan-400 border border-cyan-500/50 hover:bg-cyan-600 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,243,255,0.2)] active:scale-95 cyber-button flex-shrink-0 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                        <Brain size={14} />
-                        立即執行市價預測
+                        <Brain size={14} className={loading ? 'animate-pulse' : ''} />
+                        {loading ? '正在啟動預測...' : '立即執行市價預測'}
                     </button>
                     <button 
                       onClick={fetchPredictions}
@@ -56,7 +67,9 @@ const AIPredictions = () => {
                                     <Layers size={14} className="text-cyan-500" />
                                     <span className="text-[10px] font-black text-cyan-500/50 uppercase tracking-widest">Specification_ID: {p.specification_id}</span>
                                 </div>
-                                <h2 className="text-2xl font-black text-white group-hover:text-cyan-400 transition-colors uppercase tracking-tighter">{p.specification_name}</h2>
+                                <h2 className="text-2xl font-black text-white group-hover:text-cyan-400 transition-colors uppercase tracking-tighter">
+                                    {p.model_name} <span className="text-cyan-500/80 ml-2">{p.specification_name}</span>
+                                </h2>
                                 <div className="mt-4 flex items-center gap-4">
                                     <span className="flex items-center gap-1.5 px-3 py-1 bg-slate-950 rounded-full border border-white/5 text-[9px] font-bold text-gray-500 uppercase tracking-widest">
                                         <Info size={12} />

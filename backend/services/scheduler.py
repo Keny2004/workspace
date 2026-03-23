@@ -9,6 +9,7 @@ from datetime import datetime
 from ..database import SessionLocal
 from ..models import Specification, MarketPrice, ProductModel
 from .carousell_scraper import CarousellScraper
+from .yahoo_scraper import YahooScraper
 from .valuation_scraper import ValuationScraper
 from .product_service import ProductService
 from .telegram_service import TelegramService
@@ -17,6 +18,7 @@ class SchedulerService:
     def __init__(self):
         self.scheduler = BackgroundScheduler()
         self.carousell = CarousellScraper()
+        self.yahoo = YahooScraper()
         self.valuation = ValuationScraper()
         self.telegram = TelegramService()
         self.is_crawling = False
@@ -31,6 +33,14 @@ class SchedulerService:
         )
         self.logger = logging.getLogger("Scheduler")
         self.last_403_time = 0 # Unix timestamp of last 403 error
+
+    def stop_all(self):
+        """Immediately halts all background operations"""
+        self.is_paused = True
+        self.is_crawling = False
+        self.is_ai_running = False
+        self.logger.info("SYSTEM_HALT: All background services stopped by user.")
+        return True
 
     def check_403_backoff(self) -> bool:
         """Check if we are currently in a 15-minute backoff period due to 403"""
@@ -201,15 +211,16 @@ class SchedulerService:
                     time.sleep(1)
                 if self.is_paused: break
 
+                # === Carousell Search ===
                 self.logger.info(f"Executing Carousell Search: {query}...")
                 try:
                     items = self.carousell.search(query)
                     # If search succeeds (no exception), reset 502 count
                     self.consecutive_502_count = 0 
-                    self.logger.info(f"Found {len(items)} items for {query}.")
+                    self.logger.info(f"Found {len(items)} Carousell items for {query}.")
                 except RuntimeError as e:
                     if str(e) == "FORBIDDEN_403":
-                        self.logger.error("403 Forbidden detected. Entering 15min backoff.")
+                        self.logger.error("403 Forbidden detected on Carousell. Entering 15min backoff.")
                         self.last_403_time = int(time.time())
                         break # Stop current crawl session
                     raise e
@@ -225,45 +236,91 @@ class SchedulerService:
                             break
                         continue # Move to next spec
                     else:
-                        self.logger.error(f"Search failed for {query}: {e}")
-                        continue
+                        self.logger.error(f"Carousell search failed for {query}: {e}")
+                        items = []
                 
-                for item in items:
-                    self.logger.info(f"  > Processing: {item['title']} - NT${item['price']}")
-                    product = product_service.process_scraped_item(spec.id, "Carousell", item)
-                    if product and product.is_potential_profit and not product.ai_summary:
-                        # 1. AI Summarize
-                        self.is_ai_running = True
-                        try:
-                            summary = product_service.generate_ai_summary(product)
-                        finally:
-                            self.is_ai_running = False
-                        # 2. Telegram Notify
-                        if summary:
-                            profit = 0 # Calculate based on benchmark
-                            benchmark = db.query(MarketPrice).filter(
-                                MarketPrice.specification_id == spec.id
-                            ).order_by(MarketPrice.updated_at.desc()).first()
-                            
-                            if benchmark:
-                                profit = benchmark.price - item['price']
-                            
-                            # Check profit threshold from config
-                            threshold_str = product_service.get_config("telegram_profit_threshold", "0")
-                            try:
-                                threshold = float(threshold_str)
-                            except:
-                                threshold = 0
-                                
-                            if profit >= threshold:
-                                msg = self.telegram.format_product_message(product, f"{model_name} {spec.name}", profit)
-                                self.telegram.send_notification(msg)
+                # Process Carousell items
+                self._process_and_notify(items, "Carousell", spec, model_name, product_service, db)
                 
-                # Short safe sleep between processing found items
+                # Short safe sleep between platforms
+                time.sleep(2)
+                
+                # === Yahoo Auction Search ===
+                if self.is_paused or self.check_403_backoff():
+                    break
+                
+                self.logger.info(f"Executing Yahoo Auction Search: {query}...")
+                try:
+                    yahoo_items = self.yahoo.search(query)
+                    self.logger.info(f"Found {len(yahoo_items)} Yahoo Auction items for {query}.")
+                except RuntimeError as e:
+                    if str(e) == "FORBIDDEN_403":
+                        self.logger.error("403 Forbidden detected on Yahoo Auction. Skipping Yahoo for this session.")
+                        yahoo_items = []
+                    else:
+                        self.logger.error(f"Yahoo Auction search failed for {query}: {e}")
+                        yahoo_items = []
+                except Exception as e:
+                    self.logger.error(f"Yahoo Auction search failed for {query}: {e}")
+                    yahoo_items = []
+                
+                # Process Yahoo items
+                self._process_and_notify(yahoo_items, "Yahoo Auction", spec, model_name, product_service, db)
+                
+                # Short safe sleep between specs
                 time.sleep(2)
         finally:
             self.is_crawling = False
             db.close()
+
+    def _process_and_notify(self, items, platform, spec, model_name, product_service, db):
+        """
+        共用邏輯：處理爬取結果 → AI 摘要 → Telegram 通知
+        """
+        # Prepare benchmark and margin beforehand for the AI prompt
+        from .models import MarketPrice
+        benchmark = db.query(MarketPrice).filter(
+            MarketPrice.specification_id == spec.id
+        ).order_by(MarketPrice.updated_at.desc()).first()
+        benchmark_price = benchmark.price if benchmark else 0
+        
+        profit_percent_str = product_service.get_config(f"profit_margin", "30")
+        if spec.model and spec.model.category:
+            profit_percent_str = product_service.get_config(f"profit_margin_{spec.model.category.name}", "30")
+        try:
+            profit_margin_percent = float(profit_percent_str)
+        except:
+            profit_margin_percent = 30.0
+
+        for item in items:
+            self.logger.info(f"  > [{platform}] Processing: {item['title']} - NT${item['price']}")
+            product = product_service.process_scraped_item(spec.id, platform, item)
+            
+            if product and product.is_potential_profit and not product.ai_summary and benchmark_price > 0:
+                # 1. AI Validate and Summarize
+                self.is_ai_running = True
+                try:
+                    summary = product_service.validate_and_summarize_with_ai(product, benchmark_price, profit_margin_percent)
+                finally:
+                    self.is_ai_running = False
+                
+                # 2. Telegram Notify
+                if summary and product.is_potential_profit:  # double check it's still potential profit after AI
+                    # Filter out faulty items if the spec doesn't allow recommending them
+                    if getattr(product, 'is_faulty', False) and not getattr(spec, 'recommend_faulty', False):
+                        continue
+                        
+                    profit = benchmark_price - item['price']
+                    
+                    threshold_str = product_service.get_config("telegram_profit_threshold", "0")
+                    try:
+                        threshold = float(threshold_str)
+                    except:
+                        threshold = 0
+                        
+                    if profit >= threshold:
+                        msg = self.telegram.format_product_message(product, f"{model_name} {spec.name}", profit)
+                        self.telegram.send_notification(msg)
 
     def run_ai_predictions(self):
         """Hourly task to update market price predictions"""
@@ -273,7 +330,7 @@ class SchedulerService:
         try:
             product_service = ProductService(db)
             self.logger.info("Starting hourly AI Market Price Prediction...")
-            product_service.calculate_ai_predictions()
+            product_service.calculate_ai_predictions(check_abort=lambda: self.is_paused or not self.is_ai_running)
             self.logger.info("Finished AI Market Price Prediction.")
         finally:
             self.is_ai_running = False
@@ -287,7 +344,7 @@ class SchedulerService:
         try:
             product_service = ProductService(db)
             self.logger.info("Starting AI Summary Sweep...")
-            count = product_service.sweep_missing_summaries(limit=10) # Process 10 at a time
+            count = product_service.sweep_missing_summaries(limit=10, check_abort=lambda: self.is_paused or not self.is_ai_running) # Process 10 at a time
             self.logger.info(f"Processed {count} missing AI summaries.")
         finally:
             self.is_ai_running = False

@@ -73,6 +73,18 @@ const MarketPrices = () => {
         });
     };
 
+    const toggleFaulty = (spec_id, currentVal) => {
+        axios.patch(`/api/specifications/${spec_id}`, { recommend_faulty: !currentVal }).then(res => {
+            if (res.data.status === "success") {
+                setPrices(prev => prev.map(p => 
+                    p.specification_id === spec_id 
+                    ? { ...p, recommend_faulty: !currentVal } 
+                    : p
+                ));
+            }
+        });
+    };
+
     const handleManualSubmit = (e) => {
         e.preventDefault();
         setSubmitting(true);
@@ -269,6 +281,7 @@ const MarketPrices = () => {
                             <th className="px-8 py-5 text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">詳細規格</th>
                             <th className="px-8 py-5 text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">市場報價</th>
                             <th className="px-8 py-5 text-[10px] font-black text-blue-500 uppercase tracking-widest leading-none">預定收購價 (類別加成)</th>
+                            <th className="px-8 py-5 text-[10px] font-black text-rose-500 uppercase tracking-widest leading-none">推故障機</th>
                             <th className="px-8 py-5 text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">來源平台</th>
                             <th className="px-8 py-5 text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none text-right">最後更新</th>
                         </tr>
@@ -319,6 +332,14 @@ const MarketPrices = () => {
                                             </span>
                                         </div>
                                     </div>
+                                </td>
+                                <td className="px-8 py-4">
+                                    <button 
+                                        onClick={() => toggleFaulty(p.specification_id, p.recommend_faulty)}
+                                        className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all border ${p.recommend_faulty ? 'bg-rose-500/20 text-rose-400 border-rose-500/50 shadow-[0_0_10px_rgba(244,63,94,0.3)]' : 'bg-slate-900 border-white/10 text-gray-600 hover:border-gray-500 hover:text-gray-400'}`}
+                                    >
+                                        {p.recommend_faulty ? "ON" : "OFF"}
+                                    </button>
                                 </td>
                                 <td className="px-8 py-4">
                                     <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-tighter ${p.source === 'US3C' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>

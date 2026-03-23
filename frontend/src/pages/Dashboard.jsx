@@ -8,6 +8,7 @@ const Dashboard = () => {
   const [models, setModels] = useState([]);
   const [specs, setSpecs] = useState([]);
   const [latestHits, setLatestHits] = useState([]);
+  const [filteredHits, setFilteredHits] = useState([]);
   
   const [selectedCat, setSelectedCat] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
@@ -38,9 +39,11 @@ const Dashboard = () => {
 
   const fetchStats = () => axios.get('/api/stats').then(res => setStats(res.data));
   const fetchLatestHits = () => {
-    axios.get('/api/products').then(res => {
-        const potential = res.data.filter(p => p.is_potential_profit).slice(0, 5);
+    axios.get('/api/products?show_ignored=true').then(res => {
+        const potential = res.data.filter(p => p.is_potential_profit && !p.is_ignored_by_user).slice(0, 5);
+        const filtered = res.data.filter(p => !p.is_potential_profit || p.is_ignored_by_user).slice(0, 5);
         setLatestHits(potential);
+        setFilteredHits(filtered);
     });
   };
 
@@ -197,6 +200,36 @@ const Dashboard = () => {
                 </div>
             </div>
 
+
+            {/* Filtered History Section */}
+            <div className="bg-slate-900/40 p-8 rounded-[2.5rem] border border-slate-800 cyber-border relative overflow-hidden group backdrop-blur-md">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/20 transition-all"></div>
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] mb-6 flex items-center gap-3 text-amber-500">
+                    <AlertCircle size={16} className="shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
+                    FILTERED_HISTORY_LOG // 已過濾歷史數據
+                </h3>
+                <div className="space-y-4">
+                    {filteredHits.map(hit => (
+                        <div key={hit.id} className="flex items-center justify-between p-4 bg-slate-950/50 rounded-2xl border border-white/5 hover:border-amber-500/30 transition-all group/item hover:bg-slate-950/80">
+                            <div className="flex-1 min-w-0 mr-4">
+                                <div className="text-[9px] font-black text-amber-500/50 uppercase tracking-widest mb-1">{hit.platform} // ID_{hit.id}</div>
+                                <h4 className="text-xs font-bold text-gray-500 truncate tracking-tight uppercase group-hover/item:text-gray-400 transition-colors line-through decoration-amber-500/30">{hit.title}</h4>
+                            </div>
+                            <div className="text-right flex flex-col items-end">
+                                <span className="text-[9px] font-black bg-slate-900 border border-white/10 text-gray-500 px-2 py-1 rounded">
+                                  {hit.is_ignored_by_user ? 'USER_IGNORED' : 'AI_FILTERED'}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                    {filteredHits.length === 0 && (
+                        <div className="py-12 flex flex-col items-center justify-center opacity-20">
+                            <AlertCircle size={32} className="mb-4 opacity-70" />
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em]">No Filtered Records</p>
+                        </div>
+                    )}
+                </div>
+            </div>
 
         </div>
 

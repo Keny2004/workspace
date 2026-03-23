@@ -86,24 +86,31 @@ class ProductService:
 
         is_potential = (profit > 0)
 
-        # 5. Save/Update
+        # 5. Save/Update Check (Deduplication & Soft Delete)
         existing = self.db.query(ScrapedProduct).filter(
             ScrapedProduct.external_id == item_data['external_id'],
             ScrapedProduct.platform == platform
         ).first()
 
+        # If user ignored this item previously, skip it completely
+        if existing and existing.is_ignored_by_user:
+            self.record_stat(filtered=1)
+            return existing
+
         # If it's a new potential hit, OR an existing potential hit without description, fetch details
         should_fetch_details = is_potential and (not existing or not existing.description)
         details = {}
         if should_fetch_details:
-            from .carousell_scraper import CarousellScraper
             if platform == "Carousell":
+                from .carousell_scraper import CarousellScraper
                 scraper = CarousellScraper()
                 details = scraper.get_item_details(item_data['url'])
+            elif platform == "Yahoo Auction":
+                from .yahoo_scraper import YahooScraper
+                scraper = YahooScraper()
+                details = scraper.get_item_details(item_data['url'])
                 
-            # --- NEW: Anomaly Detection ---
-            if self.detect_anomaly_with_ai(item_data['title'], details.get('description', '')):
-                is_potential = False
+            # Note: We now do AI verification later, so no detect_anomaly here
                 
         if is_potential:
             self.record_stat(potential=1)
@@ -112,6 +119,8 @@ class ProductService:
 
         if existing:
             existing.price = price
+            # Only update potential profit if it wasn't already evaluated, or if price changed drastically
+            # But let's trust our new calculation
             existing.is_potential_profit = is_potential
             if details:
                 existing.description = details.get('description', '')
@@ -145,121 +154,133 @@ class ProductService:
         self.db.add(new_prod)
         self.db.commit()
         self.db.refresh(new_prod)
+        self.db.refresh(new_prod)
         
         return new_prod
 
-    def generate_ai_summary(self, product: ScrapedProduct):
+    def validate_and_summarize_with_ai(self, product: ScrapedProduct, benchmark_price: float, profit_margin_percent: float):
         """
-        Call Ollama API for summarization. Focus on DETAILS, < 50 words.
+        Unified AI call: Stateless prompt that verifies product authenticity, hardware type, price range,
+        and generates a clean summary with tags in standard JSON.
         """
+        if not product.title: return None
+        
         ollama_url = self.get_config("ollama_url", "http://localhost:11434/api/generate")
         model = self.get_config("ollama_model", "qwen3.5:4b")
+        
+        # Calculate allowed price range
+        lower_bound = benchmark_price * 0.7   # Base price - 30%
+        margin_mult = 1.0 + (profit_margin_percent / 100.0)
+        upper_bound = benchmark_price * margin_mult
 
-        prompt = f"""請以繁體中文分析以下二手商品賣家描述，給出極簡總結與關鍵標籤。
-直接轉述重點細節，絕不可包含任何客服專線、實體門市地址、營業時間或無關的客套話。
-1. 瑕疵/傷痕/漏液 具體位置
-2. 電池健康度/循環次數 (若有)
-3. 是否維修過
-4. 配件有無
+        # Get full specification name (Model + Spec)
+        target_name = f"{product.specification.model.name} {product.specification.name}"
 
-[格式規範]：
-總結開頭必須標示狀態：若有故障/損壞/螢幕問題必須標為 [⚠️故障機]，若一切正常標為 [✅正常]。
-總結請控制在 30 字以內，一目了然。
-重點標籤請擷取3-5個，以逗號分隔（例如：螢幕漏液, 故障機, 未維修, 單機無配件）。
+        prompt = f"""你是一個嚴格的二手 3C 商品鑑定處理器。
+請根據以下資訊審核商品，輸出 JSON 格式。
 
-請嚴格依照以下格式輸出：
-【總結】: [狀態] 你的總結...
-【標籤】: 標籤1, 標籤2, 標籤3
+【目標收購型號】
+{target_name}
 
+【待審核商品資訊】
 標題：{product.title}
-描述：{product.description}
+內文：{product.description[:1000]}
+商品標價：{product.price:.0f} 元
+收購基準價：{benchmark_price:.0f} 元（允許區間：{lower_bound:.0f} ~ {upper_bound:.0f}）
+
+【審核規則】
+1. 相符性：標題或內文是否明確指的是 "{target_name}"？(若型號不對或僅是配件則為 False)
+2. 真實性：是否為「真實機器主機」？(若為空盒、保護殼、維修服務、無卡分期廣告、虛擬代碼則為 False)。註：若主機附帶盒子配件是加分項，不應誤判為空盒。
+3. 價格：標價是否在允許區間內？(偏差過大可能是標錯價或釣魚廣告則為 False)
+4. 狀態：是否為故障機、零件機、損壞、不亮、烙印、泡水？(若是則 is_faulty 為 True)
+
+【輸出 JSON】
+{{
+  "is_valid": bool,
+  "is_faulty": bool,
+  "summary": "30字內重點摘要",
+  "tags": ["標籤1", "標籤2"]
+}}
 """
+        import json
         try:
             response = requests.post(ollama_url, json={
                 "model": model,
                 "prompt": prompt,
-                "stream": False
+                "stream": False,
+                "format": "json"
             }, timeout=300)
             if response.status_code == 200:
-                result_text = response.json().get("response", "").strip()
+                resp_json = response.json()
+                print(f"DEBUG: Ollama Full Response: {resp_json}")
+                result_text = resp_json.get("response", "").strip()
                 
-                # Parse summary and tags
-                summary = result_text
-                tags_str = ""
-                
+                # Use regex to find the first { and last } to extract JSON
                 import re
-                summary_match = re.search(r'【總結】[:：]?\s*(.*)', result_text)
-                tags_match = re.search(r'【標籤】[:：]?\s*(.*)', result_text)
+                json_str = ""
+                try:
+                    # Look for { ... } including possible nested ones
+                    json_match = re.search(r'(\{.*\})', result_text, re.DOTALL | re.MULTILINE)
+                    if json_match:
+                        json_str = json_match.group(1)
+                        try:
+                            data = json.loads(json_str)
+                        except json.JSONDecodeError:
+                            # Try to repair common LLM mistakes (single quotes instead of double)
+                            repaired = json_str.replace("'", '"')
+                            # Also handle trailing commas before closing braces
+                            repaired = re.sub(r',\s*\}', '}', repaired)
+                            repaired = re.sub(r',\s*\]', ']', repaired)
+                            data = json.loads(repaired)
+                    else:
+                        data = json.loads(result_text)
+                except Exception as je:
+                    print(f"❌ CRITICAL AI PARSE ERROR: {je}")
+                    print(f"RAW TEXT: {result_text}")
+                    # Log snippet of raw text to product summary as placeholder for debugging
+                    product.ai_summary = f"聯網鑑定失敗: AI 回傳格式不符。 (建議稍後點擊重試)"
+                    self.db.commit()
+                    return None
                 
-                if summary_match:
-                    summary = summary_match.group(1).strip()
-                if tags_match:
-                    tags_str = tags_match.group(1).strip()
-                
-                product.ai_summary = summary
-                
-                if "[⚠️故障機]" in summary or "故障" in summary or "壞" in summary or "漏液" in summary:
-                    product.is_faulty = True
-                else:
-                    product.is_faulty = False
-                
-                if tags_str:
-                    tags_str = re.sub(r'[\.。\"\']$', '', tags_str)
-                    new_tags = [t.strip() for t in tags_str.split(',') if t.strip()]
-                    product.tags = ",".join(new_tags)
-                elif product.is_faulty:
-                    product.tags = "故障"
+                # Case-insensitive and type-tolerant check for is_valid
+                is_valid = data.get("is_valid")
+                if isinstance(is_valid, str):
+                    is_valid = is_valid.lower() == "true"
+                elif is_valid is None:
+                    is_valid = False
+                if not is_valid:
+                    product.is_potential_profit = False
+                    product.ai_summary = f"AI 判定不符收購條件 (不推薦)"
+                    self.db.commit()
+                    return None
                     
+                summary = data.get("summary", "")
+                is_faulty = data.get("is_faulty", False)
+                tags = data.get("tags", [])
+                
+                # Check summary text for faulty keywords just in case AI missed it
+                if "故障" in summary or "壞" in summary or "漏液" in summary:
+                    is_faulty = True
+                    
+                product.ai_summary = summary
+                product.is_faulty = is_faulty
+                product.is_potential_profit = True  # AI validated this as a real/valid item
+                product.tags = ",".join(tags) if tags else ""
+                
                 self.db.commit()
                 return summary
         except Exception as e:
             print(f"Ollama inference failed: {e}")
         return None
 
-    def detect_anomaly_with_ai(self, title: str, description: str) -> bool:
-        """
-        Use AI to quickly determine if a listing is a fake product, an empty box, 
-        an installment (分期/貸款) ad, or an accessory instead of the main target.
-        """
-        if not title: return False
-        
-        ollama_url = self.get_config("ollama_url", "http://localhost:11434/api/generate")
-        model = self.get_config("ollama_model", "qwen3.5:4b")
-
-        prompt = f"""請判斷以下拍賣商品是否為「真實的3C主機/設備買賣」。
-若是以下任何一種情況，請直接回答 "ANOMALY"，否則回答 "NORMAL"：
-1. 僅販售「空盒」、「外盒」或「包裝」。
-2. 這是「無卡分期」、「貸款」、「免卡分期」的廣告或報價。
-3. 僅販售「手機殼」、「保護貼」、「充電線」、「手寫筆」等周邊配件。
-4. 這是「高價收購」、「維修服務」的廣告，而非賣商品。
-5. 標題與內文只寫了「零件機」、「屍體機」等嚴重毀損無法使用的機器。
-
-只允許回答 "ANOMALY" 或 "NORMAL"，不要有任何其他文字。
-
-商品標題：{title}
-商品描述：{description}
-"""
-        try:
-            response = requests.post(ollama_url, json={
-                "model": model,
-                "prompt": prompt,
-                "stream": False
-            }, timeout=300)
-            if response.status_code == 200:
-                result_text = response.json().get("response", "").strip().upper()
-                if "ANOMALY" in result_text:
-                    return True
-        except Exception as e:
-            print(f"Anomaly detection failed: {e}")
-            
-        return False
-
     def sweep_missing_details(self, limit: int = 5):
         """
         遍歷數據庫中高潛力項目，但缺失詳細描述的。
         從原始頁面抓取描述、具體狀況與地點，並更新標記。
+        支援 Carousell 及 Yahoo Auction 平台。
         """
         from .carousell_scraper import CarousellScraper
+        from .yahoo_scraper import YahooScraper
         items = self.db.query(ScrapedProduct).filter(
             ScrapedProduct.is_potential_profit == True,
             ScrapedProduct.description == ""
@@ -267,10 +288,14 @@ class ProductService:
         
         if not items: return 0
         
-        scraper = CarousellScraper()
+        carousell_scraper = CarousellScraper()
+        yahoo_scraper = YahooScraper()
         count = 0
         for item in items:
-            details = scraper.get_item_details(item.url)
+            if item.platform == "Yahoo Auction":
+                details = yahoo_scraper.get_item_details(item.url)
+            else:
+                details = carousell_scraper.get_item_details(item.url)
             if not details: continue
             
             item.description = details.get("description", "")
@@ -356,7 +381,7 @@ class ProductService:
             print(f"AI Validation failed: {e}")
         return True # Default to True on failure to avoid over-filtering
 
-    def sweep_missing_summaries(self, limit: int = 5):
+    def sweep_missing_summaries(self, limit: int = 5, check_abort=None):
         """
         Sweep through potential profit items missing summaries.
         Also re-validates against new filtering rules (keywords, price sanity).
@@ -368,6 +393,9 @@ class ProductService:
         
         count = 0
         for item in items:
+            if check_abort and check_abort():
+                print("🛑 AI Sweep Aborted by signal.")
+                break
             spec = item.specification
             if not spec: continue
 
@@ -401,7 +429,15 @@ class ProductService:
                 continue
 
             # 3. All good, generate summary
-            self.generate_ai_summary(item)
+            profit_percent_str = self.get_config(f"profit_margin", "30")
+            if spec.model and spec.model.category:
+                profit_percent_str = self.get_config(f"profit_margin_{spec.model.category.name}", "30")
+            try:
+                profit_margin_percent = float(profit_percent_str)
+            except:
+                profit_margin_percent = 30.0
+
+            self.validate_and_summarize_with_ai(item, base_quote, profit_margin_percent)
             count += 1
         return count
 
@@ -428,11 +464,42 @@ class ProductService:
         stat.potential_count += potential
         self.db.commit()
 
-    def calculate_ai_predictions(self):
-        """
-        Hourly task: Calculate median price of non-faulty listings for all monitored specs.
-        """
-        from ..models import MarketPrediction
+    def refresh_all_recommended_ai(self, check_abort=None):
+        """Re-evaluates AI summaries for all currently recommended products"""
+        products = self.db.query(ScrapedProduct).filter(
+            ScrapedProduct.is_ignored_by_user == False,
+            ScrapedProduct.is_potential_profit == True
+        ).all()
+
+        count = 0
+        for product in products:
+            if check_abort and check_abort():
+                print("🛑 Refresh ALL AI Aborted by signal.")
+                break
+            spec = product.specification
+            if not spec: continue
+
+            target_price = self.get_target_price(spec)
+            if target_price <= 0: continue
+
+            profit_percent_str = self.get_config("profit_margin", "30")
+            if spec.model and spec.model.category:
+                profit_percent_str = self.get_config(f"profit_margin_{spec.model.category.name}", "30")
+            try:
+                margin = float(profit_percent_str)
+            except:
+                margin = 30.0
+
+            try:
+                self.validate_and_summarize_with_ai(product, target_price, margin)
+                count += 1
+            except Exception as e:
+                print(f"Failed to refresh AI for product {product.id}: {e}")
+                
+        return count
+    def calculate_ai_predictions(self, check_abort=None):
+        """AI-powered market predictions for tracked specifications"""
+        from ..models import MarketPrediction, Specification
         from datetime import timedelta
         import json
         
@@ -441,6 +508,9 @@ class ProductService:
         
         specs = self.db.query(Specification).filter(Specification.is_monitored == True).all()
         for spec in specs:
+            if check_abort and check_abort():
+                print("🛑 AI Prediction Aborted by signal.")
+                break
             # Get non-faulty listings
             listings = self.db.query(ScrapedProduct.price).filter(
                 ScrapedProduct.specification_id == spec.id,
@@ -482,7 +552,12 @@ class ProductService:
                     "format": "json"
                 }, timeout=300)
                 if response.status_code == 200:
-                    ai_analysis_str = response.json().get("response", "").strip()
+                    ai_res = response.json().get("response", "").strip()
+                    if "```json" in ai_res:
+                        ai_res = ai_res.split("```json")[1].split("```")[0].strip()
+                    elif "```" in ai_res:
+                        ai_res = ai_res.split("```")[1].strip()
+                    ai_analysis_str = ai_res
             except Exception as e:
                 print(f"AI Pricing inference failed: {e}")
 

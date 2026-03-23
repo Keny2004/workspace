@@ -1,96 +1,41 @@
 /Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
   warnings.warn(
-INFO:     Started server process [88998]
+INFO:     Started server process [20566]
 INFO:     Waiting for application startup.
-2026-03-23 00:59:14,122 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2026-03-23 00:59:14,123 - Scheduler - INFO - Reloading Intervals: Crawl=45m, AI=1h, Summary=10m, Enrich=30m
-2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Added job "SchedulerService.update_market_prices" to job store "default"
-2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Added job "SchedulerService.crawl_products" to job store "default"
-2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Added job "SchedulerService.run_ai_predictions" to job store "default"
-2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Added job "SchedulerService.sweep_missing_summaries" to job store "default"
-2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Added job "SchedulerService.sweep_metadata_enrichment" to job store "default"
-2026-03-23 00:59:14,124 - apscheduler.scheduler - INFO - Scheduler started
+2026-03-23 11:40:27,971 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-23 11:40:27,972 - Scheduler - INFO - Reloading Intervals: Crawl=15m, AI=1h, Summary=20m, Enrich=30m
+2026-03-23 11:40:27,973 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-23 11:40:27,973 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-23 11:40:27,973 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-23 11:40:27,973 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-23 11:40:27,973 - apscheduler.scheduler - INFO - Added job "SchedulerService.update_market_prices" to job store "default"
+2026-03-23 11:40:27,973 - apscheduler.scheduler - INFO - Added job "SchedulerService.crawl_products" to job store "default"
+2026-03-23 11:40:27,973 - apscheduler.scheduler - INFO - Added job "SchedulerService.run_ai_predictions" to job store "default"
+2026-03-23 11:40:27,973 - apscheduler.scheduler - INFO - Added job "SchedulerService.sweep_missing_summaries" to job store "default"
+2026-03-23 11:40:27,973 - apscheduler.scheduler - INFO - Added job "SchedulerService.sweep_metadata_enrichment" to job store "default"
+2026-03-23 11:40:27,973 - apscheduler.scheduler - INFO - Scheduler started
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-2026-03-23 01:09:14,129 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_missing_summaries (trigger: interval[0:10:00], next run at: 2026-03-23 01:09:14 CST)" (scheduled at 2026-03-23 01:09:14.124377+08:00)
-2026-03-23 01:09:14,133 - Scheduler - INFO - Starting AI Summary Sweep...
-2026-03-23 01:09:14,150 - Scheduler - INFO - Processed 0 missing AI summaries.
-2026-03-23 01:09:14,151 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_missing_summaries (trigger: interval[0:10:00], next run at: 2026-03-23 01:19:14 CST)" executed successfully
-INFO:     127.0.0.1:64268 - "GET /api/market-predictions HTTP/1.1" 500 Internal Server Error
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 409, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 290, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 121, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 107, in app
-    response = await f(request)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 426, in app
-    raw_response = await run_endpoint_function(
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
-    return await run_in_threadpool(dependant.call, **values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
-    return await anyio.to_thread.run_sync(func)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/to_thread.py", line 63, in run_sync
-    return await get_async_backend().run_sync_in_worker_thread(
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
-    return await future
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 986, in run
-    result = context.run(func, *args)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 228, in get_market_predictions
-    "user_manual_price": p.specification.user_manual_price,
-AttributeError: 'Specification' object has no attribute 'user_manual_price'
-INFO:     127.0.0.1:64283 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64282 - "GET /api/market-prices/all HTTP/1.1" 200 OK
-2026-03-23 01:19:14,127 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_missing_summaries (trigger: interval[0:10:00], next run at: 2026-03-23 01:29:14 CST)" (scheduled at 2026-03-23 01:19:14.124377+08:00)
-2026-03-23 01:19:14,129 - Scheduler - INFO - Starting AI Summary Sweep...
-2026-03-23 01:19:14,134 - Scheduler - INFO - Processed 0 missing AI summaries.
-2026-03-23 01:19:14,135 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_missing_summaries (trigger: interval[0:10:00], next run at: 2026-03-23 01:29:14 CST)" executed successfully
-INFO:     127.0.0.1:64441 - "GET /api/config HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64442 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64446 - "WebSocket /ws/logs" [accepted]
+INFO:     127.0.0.1:61446 - "GET /api/market-predictions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61606 - "GET /api/market-predictions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61609 - "GET /api/market-predictions HTTP/1.1" 200 OK
+2026-03-23 11:50:49,931 - Scheduler - INFO - Starting hourly AI Market Price Prediction...
+INFO:     127.0.0.1:61612 - "POST /api/ai/predict/trigger HTTP/1.1" 200 OK
+🛑 AI Prediction Aborted by signal.
+2026-03-23 11:50:49,937 - Scheduler - INFO - Finished AI Market Price Prediction.
+INFO:     127.0.0.1:61615 - "GET /api/market-predictions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61618 - "GET /api/products?show_all=true&limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61629 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61632 - "POST /api/products/refresh-all-ai HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61638 - "WebSocket /ws/logs" [accepted]
 INFO:     connection open
-INFO:     127.0.0.1:64447 - "WebSocket /ws/status" [accepted]
+INFO:     127.0.0.1:61639 - "WebSocket /ws/status" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61640 - "WebSocket /ws/logs" [accepted]
 INFO:     connection open
 INFO:     connection closed
-INFO:     127.0.0.1:64448 - "WebSocket /ws/logs" [accepted]
-INFO:     connection open
 INFO:     connection closed
-INFO:     127.0.0.1:64449 - "WebSocket /ws/status" [accepted]
+INFO:     127.0.0.1:61641 - "WebSocket /ws/status" [accepted]
 INFO:     connection open
 Log WebSocket error: 
 ERROR:    Exception in ASGI application
@@ -138,73 +83,13 @@ Traceback (most recent call last):
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
     raise RuntimeError('Cannot call "send" once a close message has been sent.')
 RuntimeError: Cannot call "send" once a close message has been sent.
-2026-03-23 01:28:37,984 - Scheduler - INFO - Starting AI Summary Sweep...
-INFO:     127.0.0.1:64456 - "POST /api/ai/summarize/trigger HTTP/1.1" 200 OK
-2026-03-23 01:28:37,988 - Scheduler - INFO - Processed 0 missing AI summaries.
-2026-03-23 01:28:42,760 - Scheduler - INFO - Starting hourly AI Market Price Prediction...
-INFO:     127.0.0.1:64459 - "POST /api/ai/predict/trigger HTTP/1.1" 200 OK
-2026-03-23 01:29:14,128 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_missing_summaries (trigger: interval[0:10:00], next run at: 2026-03-23 01:39:14 CST)" (scheduled at 2026-03-23 01:29:14.124377+08:00)
-2026-03-23 01:29:14,131 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_metadata_enrichment (trigger: interval[0:30:00], next run at: 2026-03-23 01:59:14 CST)" (scheduled at 2026-03-23 01:29:14.124422+08:00)
-2026-03-23 01:29:14,131 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_missing_summaries (trigger: interval[0:10:00], next run at: 2026-03-23 01:39:14 CST)" executed successfully
-2026-03-23 01:29:14,132 - Scheduler - INFO - Starting Metadata Enrichment Sweep...
-2026-03-23 01:29:14,140 - Scheduler - INFO - Enriched 0 items with detailed metadata.
-2026-03-23 01:29:14,140 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_metadata_enrichment (trigger: interval[0:30:00], next run at: 2026-03-23 01:59:14 CST)" executed successfully
+INFO:     127.0.0.1:61644 - "POST /api/admin/db-cleanup HTTP/1.1" 200 OK
 INFO:     connection closed
 INFO:     connection closed
-INFO:     127.0.0.1:64489 - "GET /api/market-predictions HTTP/1.1" 500 Internal Server Error
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 409, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 290, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 121, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 107, in app
-    response = await f(request)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 426, in app
-    raw_response = await run_endpoint_function(
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
-    return await run_in_threadpool(dependant.call, **values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
-    return await anyio.to_thread.run_sync(func)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/to_thread.py", line 63, in run_sync
-    return await get_async_backend().run_sync_in_worker_thread(
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
-    return await future
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 986, in run
-    result = context.run(func, *args)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 228, in get_market_predictions
-    "user_manual_price": p.specification.user_manual_price,
-AttributeError: 'Specification' object has no attribute 'user_manual_price'
+INFO:     127.0.0.1:61649 - "WebSocket /ws/status" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61650 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61651 - "GET /api/categories HTTP/1.1" 200 OK
 Log WebSocket error: 
 ERROR:    Exception in ASGI application
 Traceback (most recent call last):
@@ -251,119 +136,296 @@ Traceback (most recent call last):
   File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
     raise RuntimeError('Cannot call "send" once a close message has been sent.')
 RuntimeError: Cannot call "send" once a close message has been sent.
-INFO:     127.0.0.1:64492 - "GET /api/market-predictions HTTP/1.1" 500 Internal Server Error
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 409, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 290, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 121, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 107, in app
-    response = await f(request)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 426, in app
-    raw_response = await run_endpoint_function(
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
-    return await run_in_threadpool(dependant.call, **values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
-    return await anyio.to_thread.run_sync(func)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/to_thread.py", line 63, in run_sync
-    return await get_async_backend().run_sync_in_worker_thread(
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
-    return await future
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 986, in run
-    result = context.run(func, *args)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 228, in get_market_predictions
-    "user_manual_price": p.specification.user_manual_price,
-AttributeError: 'Specification' object has no attribute 'user_manual_price'
-INFO:     127.0.0.1:64502 - "GET /api/products HTTP/1.1" 200 OK
-2026-03-23 01:29:50,154 - Scheduler - INFO - Finished AI Market Price Prediction.
-INFO:     127.0.0.1:64548 - "POST /api/ai/generate-listing HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64633 - "GET /api/market-predictions HTTP/1.1" 500 Internal Server Error
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 409, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
-    await super().__call__(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 290, in handle
-    await self.app(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 121, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 107, in app
-    response = await f(request)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 426, in app
-    raw_response = await run_endpoint_function(
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
-    return await run_in_threadpool(dependant.call, **values)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/concurrency.py", line 38, in run_in_threadpool
-    return await anyio.to_thread.run_sync(func)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/to_thread.py", line 63, in run_sync
-    return await get_async_backend().run_sync_in_worker_thread(
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
-    return await future
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 986, in run
-    result = context.run(func, *args)
-  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 228, in get_market_predictions
-    "user_manual_price": p.specification.user_manual_price,
-AttributeError: 'Specification' object has no attribute 'user_manual_price'
-INFO:     127.0.0.1:64645 - "WebSocket /ws/status" [accepted]
+INFO:     connection closed
+INFO:     127.0.0.1:61660 - "WebSocket /ws/status" [accepted]
 INFO:     connection open
-INFO:     127.0.0.1:64641 - "GET /api/stats HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64642 - "GET /api/products HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64646 - "GET /api/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61664 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61665 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61666 - "GET /api/categories HTTP/1.1" 200 OK
+2026-03-23 11:51:49,856 - Scheduler - INFO - Starting AI Summary Sweep...
+2026-03-23 11:51:49,860 - Scheduler - INFO - Processed 0 missing AI summaries.
+INFO:     127.0.0.1:61669 - "POST /api/ai/summarize/trigger HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61699 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61700 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61706 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61707 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61720 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61721 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61731 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61732 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61754 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61755 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61763 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61764 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61774 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61775 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+2026-03-23 11:55:27,978 - apscheduler.executors.default - INFO - Running job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 11:55:27 CST)" (scheduled at 2026-03-23 11:55:27.973208+08:00)
+2026-03-23 11:55:27,980 - Scheduler - INFO - Crawling paused or in 403 backoff by system.
+2026-03-23 11:55:27,980 - apscheduler.executors.default - INFO - Job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 12:10:27 CST)" executed successfully
+INFO:     127.0.0.1:61783 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61784 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61797 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61798 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61802 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61803 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61820 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61821 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61825 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61826 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61836 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61837 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61841 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61842 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61855 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61856 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61862 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61863 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61873 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61874 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+2026-03-23 12:00:27,975 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_missing_summaries (trigger: interval[0:20:00], next run at: 2026-03-23 12:20:27 CST)" (scheduled at 2026-03-23 12:00:27.973348+08:00)
+2026-03-23 12:00:27,975 - Scheduler - INFO - Starting AI Summary Sweep...
+2026-03-23 12:00:27,977 - Scheduler - INFO - Processed 0 missing AI summaries.
+2026-03-23 12:00:27,977 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_missing_summaries (trigger: interval[0:20:00], next run at: 2026-03-23 12:20:27 CST)" executed successfully
+INFO:     127.0.0.1:61882 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61883 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61901 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61902 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61923 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61924 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61947 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61948 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61958 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61959 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61969 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61970 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61993 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61994 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62017 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62018 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62032 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62033 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62043 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62044 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62054 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62055 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62069 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62070 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62089 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62090 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62108 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62109 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62123 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62124 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+2026-03-23 12:10:27,975 - apscheduler.executors.default - INFO - Running job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 12:25:27 CST)" (scheduled at 2026-03-23 12:10:27.973208+08:00)
+2026-03-23 12:10:27,975 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_metadata_enrichment (trigger: interval[0:30:00], next run at: 2026-03-23 12:40:27 CST)" (scheduled at 2026-03-23 12:10:27.973394+08:00)
+2026-03-23 12:10:27,977 - Scheduler - INFO - Starting Metadata Enrichment Sweep...
+2026-03-23 12:10:27,980 - Scheduler - INFO - Crawling paused or in 403 backoff by system.
+2026-03-23 12:10:27,981 - apscheduler.executors.default - INFO - Job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 12:25:27 CST)" executed successfully
+2026-03-23 12:10:27,981 - Scheduler - INFO - Enriched 0 items with detailed metadata.
+2026-03-23 12:10:27,982 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_metadata_enrichment (trigger: interval[0:30:00], next run at: 2026-03-23 12:40:27 CST)" executed successfully
+INFO:     127.0.0.1:62133 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62134 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62147 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62148 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62158 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62159 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62170 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62171 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62181 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62182 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62193 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62194 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62222 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62223 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62233 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62234 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62254 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62255 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62263 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62264 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62286 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62288 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62292 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62293 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62317 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62318 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62338 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62339 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62342 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62344 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+2026-03-23 12:20:27,974 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_missing_summaries (trigger: interval[0:20:00], next run at: 2026-03-23 12:40:27 CST)" (scheduled at 2026-03-23 12:20:27.973348+08:00)
+2026-03-23 12:20:27,974 - Scheduler - INFO - Starting AI Summary Sweep...
+2026-03-23 12:20:27,977 - Scheduler - INFO - Processed 0 missing AI summaries.
+2026-03-23 12:20:27,977 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_missing_summaries (trigger: interval[0:20:00], next run at: 2026-03-23 12:40:27 CST)" executed successfully
+INFO:     127.0.0.1:62362 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62363 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62373 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62374 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62378 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62379 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62395 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62396 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62407 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62408 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62416 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62417 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62427 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62428 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62440 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62441 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+2026-03-23 12:25:27,974 - apscheduler.executors.default - INFO - Running job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 12:40:27 CST)" (scheduled at 2026-03-23 12:25:27.973208+08:00)
+2026-03-23 12:25:27,977 - Scheduler - INFO - Crawling paused or in 403 backoff by system.
+2026-03-23 12:25:27,977 - apscheduler.executors.default - INFO - Job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 12:40:27 CST)" executed successfully
+INFO:     127.0.0.1:62457 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62458 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62471 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62472 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62489 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62490 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62504 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62505 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62515 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62516 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62523 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62524 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62534 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62535 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62543 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62544 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62554 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62555 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62569 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62570 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62583 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62584 - "GET /api/products?show_ignored=true HTTP/1.1" 200 OK
+INFO:     connection closed
+INFO:     127.0.0.1:62595 - "WebSocket /ws/status" [accepted]
+INFO:     connection closed
+INFO:     127.0.0.1:62598 - "WebSocket /ws/status" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62596 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62597 - "GET /api/categories HTTP/1.1" 200 OK
+INFO:     connection closed
+INFO:     127.0.0.1:62606 - "WebSocket /ws/logs" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62607 - "WebSocket /ws/status" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62608 - "WebSocket /ws/logs" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:62609 - "WebSocket /ws/status" [accepted]
+INFO:     connection open
+Log WebSocket error: 
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
+    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
+    await func(session)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
+    await dependant.call(**solved_result.values)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 116, in websocket_logs
+    await websocket.close()
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
+    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
+    raise RuntimeError('Cannot call "send" once a close message has been sent.')
+RuntimeError: Cannot call "send" once a close message has been sent.
+INFO:     127.0.0.1:62637 - "POST /api/admin/db-cleanup HTTP/1.1" 200 OK
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:62646 - "GET /api/categories HTTP/1.1" 200 OK
+Log WebSocket error: 
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 244, in run_asgi
+    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)  # type: ignore[func-returns-value]
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 77, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/routing.py", line 364, in handle
+    await self.app(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 147, in app
+    await wrap_app_handling_exceptions(app, session)(scope, receive, send)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 144, in app
+    await func(session)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/fastapi/routing.py", line 509, in app
+    await dependant.call(**solved_result.values)
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/backend/main.py", line 116, in websocket_logs
+    await websocket.close()
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 181, in close
+    await self.send({"type": "websocket.close", "code": code, "reason": reason or ""})
+  File "/Users/huangyuxuan/Documents/git/auto/workspace/venv/lib/python3.9/site-packages/starlette/websockets.py", line 98, in send
+    raise RuntimeError('Cannot call "send" once a close message has been sent.')
+RuntimeError: Cannot call "send" once a close message has been sent.
+INFO:     127.0.0.1:62645 - "GET /api/market-prices/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62653 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62658 - "GET /api/products?show_all=true&limit=100&offset=0 HTTP/1.1" 200 OK
+2026-03-23 12:40:28,026 - apscheduler.executors.default - INFO - Running job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 12:55:27 CST)" (scheduled at 2026-03-23 12:40:27.973208+08:00)
+2026-03-23 12:40:28,027 - apscheduler.executors.default - INFO - Running job "SchedulerService.run_ai_predictions (trigger: interval[1:00:00], next run at: 2026-03-23 13:40:27 CST)" (scheduled at 2026-03-23 12:40:27.973293+08:00)
+2026-03-23 12:40:28,027 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_missing_summaries (trigger: interval[0:20:00], next run at: 2026-03-23 13:00:27 CST)" (scheduled at 2026-03-23 12:40:27.973348+08:00)
+2026-03-23 12:40:28,035 - apscheduler.executors.default - INFO - Running job "SchedulerService.sweep_metadata_enrichment (trigger: interval[0:30:00], next run at: 2026-03-23 13:10:27 CST)" (scheduled at 2026-03-23 12:40:27.973394+08:00)
+2026-03-23 12:40:28,037 - Scheduler - INFO - Starting hourly AI Market Price Prediction...
+2026-03-23 12:40:28,038 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_missing_summaries (trigger: interval[0:20:00], next run at: 2026-03-23 13:00:27 CST)" executed successfully
+2026-03-23 12:40:28,038 - Scheduler - INFO - Starting Metadata Enrichment Sweep...
+2026-03-23 12:40:28,042 - Scheduler - INFO - Crawling paused or in 403 backoff by system.
+🛑 AI Prediction Aborted by signal.2026-03-23 12:40:28,042 - apscheduler.executors.default - INFO - Job "SchedulerService.crawl_products (trigger: interval[0:15:00], next run at: 2026-03-23 12:55:27 CST)" executed successfully
+
+2026-03-23 12:40:28,043 - Scheduler - INFO - Finished AI Market Price Prediction.
+2026-03-23 12:40:28,043 - Scheduler - INFO - Enriched 0 items with detailed metadata.
+2026-03-23 12:40:28,043 - apscheduler.executors.default - INFO - Job "SchedulerService.run_ai_predictions (trigger: interval[1:00:00], next run at: 2026-03-23 13:40:27 CST)" executed successfully
+2026-03-23 12:40:28,043 - apscheduler.executors.default - INFO - Job "SchedulerService.sweep_metadata_enrichment (trigger: interval[0:30:00], next run at: 2026-03-23 13:10:27 CST)" executed successfully

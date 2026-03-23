@@ -27,6 +27,7 @@ class Specification(Base):
     name = Column(String, index=True) # e.g., 256GB, 16GB+512GB
     is_monitored = Column(Boolean, default=False)
     custom_margin = Column(Float, nullable=True)
+    recommend_faulty = Column(Boolean, default=False) # Whether to recommend faulty items for this spec
     model = relationship("ProductModel", back_populates="specifications")
     market_prices = relationship("MarketPrice", back_populates="specification")
     scraped_products = relationship("ScrapedProduct", back_populates="specification")
@@ -53,6 +54,7 @@ class ScrapedProduct(Base):
     scraped_at = Column(DateTime, default=datetime.datetime.utcnow)
     is_potential_profit = Column(Boolean, default=False)
     is_faulty = Column(Boolean, default=False)
+    is_ignored_by_user = Column(Boolean, default=False) # User soft-deleted this item
     is_ai_validated = Column(Boolean, default=False) # AI confirmed spec match
     tags = Column(String, nullable=True) # e.g., "螢幕漏液,故障機"
     ai_summary = Column(String, nullable=True)

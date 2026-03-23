@@ -28,6 +28,13 @@ const SettingsPage = () => {
     const [importUrl, setImportUrl] = useState("");
     const [importCategory, setImportCategory] = useState("");
     const [importing, setImporting] = useState(false);
+    const [cleanupStats, setCleanupStats] = useState(null);
+    const [loadingCleanup, setLoadingCleanup] = useState(false);
+    const [wsStatus, setWsStatus] = useState({
+        crawler_status: "idle",
+        ai_status: "idle",
+        is_paused: false
+    });
 
     useEffect(() => {
         if (!modal) setModalInputValue("");
@@ -36,6 +43,19 @@ const SettingsPage = () => {
     useEffect(() => {
         fetchConfig();
         fetchCategories();
+        
+        let ws;
+        try {
+            const host = window.location.host.split(':')[0];
+            ws = new WebSocket(`ws://${host}:8000/ws/status`);
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    setWsStatus({ crawler_status: data.crawler_status, ai_status: data.ai_status, is_paused: data.is_paused });
+                } catch (e) { console.error(e); }
+            };
+        } catch (e) {}
+        return () => ws && ws.close();
     }, []);
 
     const fetchConfig = () => {
@@ -96,6 +116,15 @@ const SettingsPage = () => {
         });
     };
 
+    const stopAllServices = () => {
+        if (window.confirm("🔴 確定要終止所有後台服務嗎？這將停止當前正在執行的爬蟲與 AI 任務。")) {
+            axios.post('/api/system/stop-all').then(res => {
+                showNotification("🛑 所有服務已停止並進入暫停狀態");
+                setWsStatus(prev => ({...prev, is_paused: true, crawler_status: 'idle', ai_status: 'idle'}));
+            });
+        }
+    };
+
     const handleModalSubmit = (val) => {
         if (!val) return;
         if (modal.type === 'model') {
@@ -125,15 +154,26 @@ const SettingsPage = () => {
         });
     };
 
-    const clearData = () => {
-        setModal({ type: 'confirm', clearAll: true, title: "確定要清空所有已爬取的商品資料嗎？" });
+    const clearData = async () => {
+        setLoadingCleanup(true);
+        try {
+            const res = await axios.get('/api/admin/db-cleanup/preview');
+            setCleanupStats(res.data.stats);
+            setModal({ type: 'confirm-cleanup', clearAll: true, title: "確定要執行深度數據清理嗎？" });
+        } catch (e) {
+            showNotification("預覽清理數據失敗", "error");
+        } finally {
+            setLoadingCleanup(false);
+        }
     };
 
     const executeClear = () => {
-        axios.delete('/api/products/clear').then(() => {
+        axios.post('/api/admin/db-cleanup').then(() => {
             setModal(null);
-            showNotification("🗑️ 所有爬取資料已清空");
-        });
+            setCleanupStats(null);
+            fetchCategories();
+            showNotification("🗑️ 數據庫深層清理成功");
+        }).catch(() => showNotification("❌ 清理失敗", "error"));
     };
 
     const handleImportUrl = () => {
@@ -184,12 +224,23 @@ const SettingsPage = () => {
                                     onKeyDown={(e) => e.key === 'Enter' && handleModalSubmit(modalInputValue)}
                                 />
                             </div>
-                        ) : (
+                        ) : modal.type === 'confirm' ? (
                             <p className="text-gray-500 text-xs font-bold uppercase tracking-widest leading-relaxed">執行此操作將導致數據結構永久變更。確認執行 Neural_Wipe 指令？</p>
-                        )}
+                        ) : modal.type === 'confirm-cleanup' ? (
+                            <div className="space-y-4 text-sm text-gray-300">
+                                <p className="text-rose-400 font-bold mb-4">即將進階清理並合併重複資料，此操作無法復原：</p>
+                                <div className="bg-slate-950 p-4 rounded-xl border border-white/5 space-y-2 font-mono text-cyan-400">
+                                    <div className="flex justify-between"><span>合併重複型號:</span> <span>{cleanupStats?.models_merged || 0}</span></div>
+                                    <div className="flex justify-between"><span>合併重複規格:</span> <span>{cleanupStats?.specs_merged || 0}</span></div>
+                                    <div className="flex justify-between"><span>移除重複市場報價:</span> <span>{cleanupStats?.prices_cleaned || 0}</span></div>
+                                    <div className="flex justify-between"><span>移除重複爬蟲商品:</span> <span>{cleanupStats?.products_cleaned || 0}</span></div>
+                                </div>
+                                <p className="text-gray-500 text-[10px] mt-4 uppercase">Confirm execution?</p>
+                            </div>
+                        ) : null}
                         <div className="flex justify-end gap-6 pt-4">
                             <button onClick={() => setModal(null)} className="px-8 py-3 text-gray-500 font-black text-[10px] uppercase tracking-widest hover:text-white transition-colors">Abort</button>
-                            {modal.type === 'confirm' ? (
+                            {modal.type === 'confirm' || modal.type === 'confirm-cleanup' ? (
                                 <button 
                                     onClick={modal.clearAll ? executeClear : confirmDelete} 
                                     className="px-8 py-3 bg-red-600 hover:bg-red-500 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-red-600/30 text-white cyber-button"
@@ -209,26 +260,54 @@ const SettingsPage = () => {
                 </div>
             )}
 
-            <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 relative z-10">
+            <header className="flex flex-col lg:flex-row lg:justify-between lg:items-end gap-6 relative z-10 border-b border-white/5 pb-10">
                 <div>
-                    <h1 className="text-5xl font-black tracking-tighter bg-gradient-to-r from-white via-cyan-400 to-magenta-500 bg-clip-text text-transparent cyber-text-glow">系統設定</h1>
-                    <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2 opacity-70">Core Configuration // Root Access</p>
+                    <h1 className="text-5xl font-black tracking-tighter bg-gradient-to-r from-white via-cyan-400 to-magenta-500 bg-clip-text text-transparent cyber-text-glow leading-none uppercase italic">系統控制中心</h1>
+                    <p className="text-gray-500 text-[11px] font-black uppercase tracking-[0.4em] mt-3 opacity-70 italic">Core Configuration // Root Access</p>
                 </div>
-                <div className="flex gap-4">
-                    <button 
-                        onClick={clearData}
-                        className="px-6 py-3 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 rounded-2xl font-black text-[10px] uppercase tracking-widest transition active:scale-95 cyber-button"
-                    >
-                        清空舊資料
-                    </button>
-                    <button 
-                        onClick={handleSave}
-                        disabled={saving}
-                        className="flex items-center gap-3 px-10 py-3 bg-cyan-600 hover:bg-cyan-500 rounded-2xl font-black transition disabled:opacity-50 text-[11px] uppercase tracking-[0.2em] shadow-2xl shadow-cyan-600/30 text-white cyber-button"
-                    >
-                        <Save size={16} />
-                        {saving ? "SAVING..." : "COMMIT_CHANGES"}
-                    </button>
+                
+                <div className="flex flex-wrap items-center gap-6">
+                    {/* Real-time Status */}
+                    <div className="flex items-center gap-3 bg-slate-900/80 backdrop-blur-xl px-5 py-2.5 rounded-2xl border border-white/5 shadow-2xl cyber-border">
+                        <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full shadow-[0_0_10px] ${wsStatus.is_paused ? 'bg-amber-500 shadow-amber-500/50' : (wsStatus.crawler_status === 'running' ? 'bg-cyan-500 animate-pulse shadow-cyan-500/80' : 'bg-slate-700')}`}></div>
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${wsStatus.is_paused ? 'text-amber-500' : (wsStatus.crawler_status === 'running' ? 'text-cyan-500' : 'text-gray-500')}`}>
+                                {wsStatus.is_paused ? 'PAUSED' : (wsStatus.crawler_status === 'running' ? 'CRAWLING' : 'STANDBY')}
+                            </span>
+                        </div>
+                        <div className="w-[1px] h-4 bg-slate-800 mx-2"></div>
+                        <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full shadow-[0_0_10px] ${wsStatus.ai_status === 'running' ? 'bg-magenta-500 animate-pulse shadow-magenta-500/80' : 'bg-slate-700'}`}></div>
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${wsStatus.ai_status === 'running' ? 'text-magenta-500' : 'text-gray-500'}`}>
+                                AI: {wsStatus.ai_status === 'running' ? 'ACTIVE' : 'READY'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <button 
+                            onClick={stopAllServices}
+                            className="flex items-center gap-2 bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)] active:scale-95 group"
+                        >
+                            <X size={16} className="group-hover:rotate-90 transition-transform" />
+                            終止所有服務
+                        </button>
+                        <button 
+                            onClick={clearData}
+                            disabled={loadingCleanup}
+                            className="px-6 py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 rounded-2xl font-black text-[10px] uppercase tracking-widest transition active:scale-95 cyber-button disabled:opacity-50"
+                        >
+                            {loadingCleanup ? "加載中..." : "深度清理數據庫"}
+                        </button>
+                        <button 
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="flex items-center gap-3 px-10 py-2.5 bg-cyan-600 hover:bg-cyan-500 rounded-2xl font-black transition disabled:opacity-50 text-[11px] uppercase tracking-[0.2em] shadow-2xl shadow-cyan-600/30 text-white cyber-button"
+                        >
+                            <Save size={16} />
+                            {saving ? "SAVING..." : "COMMIT_CHANGES"}
+                        </button>
+                    </div>
                 </div>
             </header>
 
